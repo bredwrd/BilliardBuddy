@@ -214,7 +214,7 @@ static void read(const FileNode& node, Settings& x, const Settings& default_valu
 
 enum { DETECTION = 0, CAPTURING = 1, CALIBRATED = 2 };
 
-void loadCameraParams(string filename, Mat& cameraMatrix, Mat& distCoeffs);
+void loadCameraParams(Settings& s, Mat& cameraMatrix, Mat& distCoeffs);
 
 bool runCalibrationAndSave(Settings& s, Size imageSize, Mat&  cameraMatrix, Mat& distCoeffs,
 	vector<vector<Point2f> > imagePoints);
@@ -243,7 +243,7 @@ int main(int argc, char* argv[])
 	Mat cameraMatrix, distCoeffs;
 	Size imageSize;
 	int mode = s.inputType == Settings::IMAGE_LIST ? CAPTURING : DETECTION;
-	loadCameraParams("calibrated.xml", cameraMatrix, distCoeffs);
+	loadCameraParams(s, cameraMatrix, distCoeffs);
 	mode = CALIBRATED;
 	clock_t prevTimestamp = 0;
 	const Scalar RED(0, 0, 255), GREEN(0, 255, 0);
@@ -270,14 +270,6 @@ int main(int argc, char* argv[])
 		int baseLine = 0;
 		Size textSize = getTextSize(msg, 1, 1, 1, &baseLine);
 		Point textOrigin(view.cols - 2 * textSize.width - 10, view.rows - 2 * baseLine - 10);
-
-		if (mode == CAPTURING)
-		{
-			if (s.showUndistorsed)
-				msg = format("%d/%d Undist", (int)imagePoints.size(), s.nrFrames);
-			else
-				msg = format("%d/%d", (int)imagePoints.size(), s.nrFrames);
-		}
 
 		putText(view, msg, textOrigin, 1, 1, mode == CALIBRATED ? GREEN : RED);
 
@@ -393,9 +385,9 @@ static bool runCalibration(Settings& s, Size& imageSize, Mat& cameraMatrix, Mat&
 }
 
 // Load the specified calibration file and store camera matrix and distortion coefficients matrix
-void loadCameraParams(string filename, Mat& cameraMatrix, Mat& distCoeffs)
+void loadCameraParams(Settings& s, Mat& cameraMatrix, Mat& distCoeffs)
 {
-	FileStorage fs(filename, FileStorage::READ);
+	FileStorage fs(s.outputFileName, FileStorage::READ);
 	fs["Camera_Matrix"] >> cameraMatrix;
 	fs["Distortion_Coefficients"] >> distCoeffs;
 	fs.release();
