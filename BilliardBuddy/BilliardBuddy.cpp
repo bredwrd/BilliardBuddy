@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include <opencv2/core/core.hpp>
+#include <opencv2/ocl/ocl.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -14,7 +15,9 @@
 # define _CRT_SECURE_NO_WARNINGS
 #endif
 
+
 using namespace cv;
+using namespace ocl;
 using namespace std;
 
 static void help()
@@ -244,6 +247,7 @@ int main(int argc, char* argv[])
 	Size imageSize;
 	int mode = s.inputType == Settings::IMAGE_LIST ? CAPTURING : DETECTION;
 	loadCameraParams(s, cameraMatrix, distCoeffs);
+	oclMat gpu_temp, gpu_view, gpu_map1, gpu_map2;
 	mode = CALIBRATED;
 	clock_t prevTimestamp = 0;
 	const Scalar RED(0, 0, 255), GREEN(0, 255, 0);
@@ -280,7 +284,22 @@ int main(int argc, char* argv[])
 		if (mode == CALIBRATED && s.showUndistorsed)
 		{
 			Mat temp = view.clone();
-			undistort(temp, view, cameraMatrix, distCoeffs);
+			InputArray R = cv::noArray();
+			Mat map1 = cv::Mat(), map2 = Mat();
+			initUndistortRectifyMap(cameraMatrix, distCoeffs, R, cameraMatrix, imageSize, CV_32FC1, map1, map2);
+
+			// Load matricies as ocl-compatible matricies
+			gpu_temp.upload(temp);
+			gpu_view.upload(view);
+			gpu_map1.upload(map1);
+			gpu_map2.upload(map2);
+
+			ocl::remap(gpu_temp, gpu_view, gpu_map1, gpu_map2, INTER_NEAREST, BORDER_REPLICATE, 0);
+
+			// Unload (only remap-prerequisite) matricies as CPU-bound OpenCV matricies
+			gpu_view.download(view);
+
+			//undistort(temp, view, cameraMatrix, distCoeffs);
 		}
 
 		//------------------------------ Show image and check for input commands -------------------
