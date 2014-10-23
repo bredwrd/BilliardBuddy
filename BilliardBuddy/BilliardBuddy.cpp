@@ -5,6 +5,9 @@
 #include <time.h>
 #include <stdio.h>
 
+#include <chrono>
+#include <thread>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/ocl/ocl.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -225,6 +228,7 @@ bool runCalibrationAndSave(Settings& s, Size imageSize, Mat&  cameraMatrix, Mat&
 int main(int argc, char* argv[])
 {
 	help();
+	//std::this_thread::sleep_for(std::chrono::milliseconds(8000)); // wait for 8 seconds to attach debugger
 	Settings s;
 	const string inputSettingsFile = argc > 1 ? argv[1] : "default.xml";
 	FileStorage fs(inputSettingsFile, FileStorage::READ); // Read the settings
@@ -295,8 +299,8 @@ int main(int argc, char* argv[])
 			gpu_map2.upload(map2);
 
 			ocl::remap(gpu_temp, gpu_view, gpu_map1, gpu_map2, INTER_NEAREST, BORDER_REPLICATE, 0);
-
-			// Unload (only remap-prerequisite) matricies as CPU-bound OpenCV matricies
+			
+			// Unload (only remap-prerequisite) matricies as CPU-formatted OpenCV matricies
 			gpu_view.download(view);
 
 			//undistort(temp, view, cameraMatrix, distCoeffs);
