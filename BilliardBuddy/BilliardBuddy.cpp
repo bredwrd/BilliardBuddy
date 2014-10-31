@@ -276,23 +276,68 @@ void getStereoVideoFeed(Settings& s) {
 			bitwise_not(rightView, rightView);
 			bitwise_not(leftView, leftView);
 		}
-
+		Mat rightHoughMap;
+		Mat leftHoughMap;
 		//------------------------- Video capture  output  undistorted ------------------------------
 		if (mode == CALIBRATED && s.showUndistorsed)
 		{
+			// undistort
 			oclUndistort(gpu_temp, gpu_view, gpu_map1, gpu_map2, rightView, imageSize, cameraMatrix, distCoeffs);
 			oclUndistort(gpu_temp, gpu_view, gpu_map1, gpu_map2, leftView, imageSize, cameraMatrix, distCoeffs);
 			
-			// flip image
+			// orient image
 			transpose(rightView, rightView);
 			transpose(leftView, leftView);
 			flip(rightView, rightView, 1);
 			flip(leftView, leftView, 1);
+
+			// detect edges (Canny)
+			Canny(rightView, rightView, 120, 180, 3, true);
+			Canny(leftView, leftView, 120, 180);
+
+			cvtColor(rightView, rightHoughMap, CV_GRAY2BGR);
+			vector<Vec2f> rightLines;
+			HoughLines(rightView, rightLines, 1, CV_PI/180, 100);
+
+			cvtColor(leftView, leftHoughMap, CV_GRAY2BGR);
+			vector<Vec2f> leftLines;
+			HoughLines(leftView, leftLines, 1, CV_PI / 180, 100);
+
+			// draw lines
+
+			for (size_t i = 0; i < rightLines.size(); i++)
+			{
+				float rho = rightLines[i][0], theta = rightLines[i][1];
+				Point pt1, pt2;
+				double a = cos(theta), b = sin(theta);
+				double x0 = a*rho, y0 = b*rho;
+				pt1.x = cvRound(x0 + 1000 * (-b));
+				pt1.y = cvRound(y0 + 1000 * (a));
+				pt2.x = cvRound(x0 - 1000 * (-b));
+				pt2.y = cvRound(y0 - 1000 * (a));
+				line(rightHoughMap, pt1, pt2, Scalar(0, 0, 255), 3, CV_AA);
+			}
+			for (size_t i = 0; i < leftLines.size(); i++)
+			{
+				float rho = leftLines[i][0], theta = leftLines[i][1];
+				Point pt1, pt2;
+				double a = cos(theta), b = sin(theta);
+				double x0 = a*rho, y0 = b*rho;
+				pt1.x = cvRound(x0 + 1000 * (-b));
+				pt1.y = cvRound(y0 + 1000 * (a));
+				pt2.x = cvRound(x0 - 1000 * (-b));
+				pt2.y = cvRound(y0 - 1000 * (a));
+				line(leftHoughMap, pt1, pt2, Scalar(0, 0, 255), 3, CV_AA);
+			}
+			imshow("Right View", rightHoughMap);
+			imshow("Left View", leftHoughMap);
+		}
+		else {
+			//------------------------------ Show image and check for input commands -------------------
+			imshow("Right View", rightView);
+			imshow("Left View", leftView);
 		}
 
-		//------------------------------ Show image and check for input commands -------------------
-		imshow("Right View", rightView);
-		imshow("Left View", leftView);
 		char key = (char)waitKey(s.rightInputCapture.isOpened() ? 50 : s.delay);
 
 
