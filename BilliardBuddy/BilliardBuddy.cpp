@@ -1,4 +1,6 @@
-#define _CRT_SECURE_NO_WARNINGS
+#ifndef _CRT_SECURE_NO_WARNINGS
+# define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include <iostream>
 #include <sstream>
@@ -13,11 +15,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
-
-#ifndef _CRT_SECURE_NO_WARNINGS
-# define _CRT_SECURE_NO_WARNINGS
-#endif
-
 
 using namespace cv;
 using namespace ocl;
@@ -37,28 +34,6 @@ public:
 	enum Pattern { NOT_EXISTING, CHESSBOARD, CIRCLES_GRID, ASYMMETRIC_CIRCLES_GRID };
 	enum InputType { INVALID, CAMERA, VIDEO_FILE, IMAGE_LIST };
 
-	void write(FileStorage& fs) const                        //Write serialization for this class
-	{
-		fs << "{" << "BoardSize_Width" << boardSize.width
-			<< "BoardSize_Height" << boardSize.height
-			<< "Square_Size" << squareSize
-			<< "Calibrate_Pattern" << patternToUse
-			<< "Calibrate_NrOfFrameToUse" << nrFrames
-			<< "Calibrate_FixAspectRatio" << aspectRatio
-			<< "Calibrate_AssumeZeroTangentialDistortion" << calibZeroTangentDist
-			<< "Calibrate_FixPrincipalPointAtTheCenter" << calibFixPrincipalPoint
-
-			<< "Write_DetectedFeaturePoints" << bwritePoints
-			<< "Write_extrinsicParameters" << bwriteExtrinsics
-			<< "Write_outputFileName" << outputFileName
-
-			<< "Show_UndistortedImage" << showUndistorsed
-
-			<< "Input_FlipAroundHorizontalAxis" << flipVertical
-			<< "Input_Delay" << delay
-			<< "Input" << input
-			<< "}";
-	}
 	void read(const FileNode& node)                          //Read serialization for this class
 	{
 		node["BoardSize_Width"] >> boardSize.width;
@@ -74,7 +49,8 @@ public:
 		node["Calibrate_FixPrincipalPointAtTheCenter"] >> calibFixPrincipalPoint;
 		node["Input_FlipAroundHorizontalAxis"] >> flipVertical;
 		node["Show_UndistortedImage"] >> showUndistorsed;
-		node["Input"] >> input;
+		node["RightInput"] >> rightInput;
+		node["LeftInput"] >> leftInput;
 		node["Input_Delay"] >> delay;
 		interprate();
 	}
@@ -97,20 +73,22 @@ public:
 			goodInput = false;
 		}
 
-		if (input.empty()) {     // Check for valid input
+		if (rightInput.empty() || leftInput.empty()) {     // Check for valid input
 			inputType = INVALID;
 		}
 		else
 		{
-			if (input[0] >= '0' && input[0] <= '9')
+			if (rightInput[0] >= '0' && leftInput[0] <= '9')
 			{
-				stringstream ss(input);
-				ss >> cameraID;
+				stringstream ssRight(rightInput);
+				stringstream ssLeft(leftInput);
+				ssRight >> rightCameraID;
+				ssLeft >> leftCameraID;
 				inputType = CAMERA;
 			}
 			else
 			{
-				if (readStringList(input, imageList))
+				if (readStringList(rightInput, imageList))
 				{
 					inputType = IMAGE_LIST;
 					nrFrames = (nrFrames < (int)imageList.size()) ? nrFrames : (int)imageList.size();
@@ -119,15 +97,16 @@ public:
 					inputType = VIDEO_FILE;
 			}
 			if (inputType == CAMERA)
-				inputCapture.open(cameraID);
+				rightInputCapture.open(rightCameraID);
+				leftInputCapture.open(leftCameraID);
 			if (inputType == VIDEO_FILE)
-				inputCapture.open(input);
-			if (inputType != IMAGE_LIST && !inputCapture.isOpened())
+				rightInputCapture.open(leftInput);
+			if (inputType != IMAGE_LIST && !rightInputCapture.isOpened())
 				inputType = INVALID;
 		}
 		if (inputType == INVALID)
 		{
-			cerr << " Inexistent input: " << input;
+			cerr << " Inexistent input: " << rightInput;
 			goodInput = false;
 		}
 
@@ -149,13 +128,13 @@ public:
 		atImageList = 0;
 
 	}
-	Mat nextImage()
+	Mat nextImage(VideoCapture& captureSource)
 	{
 		Mat result;
-		if (inputCapture.isOpened())
+		if (captureSource.isOpened())
 		{
 			Mat view0;
-			inputCapture >> view0;
+			captureSource >> view0;
 			view0.copyTo(result);
 		}
 		else if (atImageList < (int)imageList.size())
@@ -192,14 +171,15 @@ public:
 	bool flipVertical;          // Flip the captured images around the horizontal axis
 	string outputFileName;      // The name of the file where to write
 	bool showUndistorsed;       // Show undistorted images after calibration
-	string input;               // The input ->
+	string rightInput;               // The input ->
+	string leftInput;
 
-
-
-	int cameraID;
+	int rightCameraID;
+	int leftCameraID;
 	vector<string> imageList;
 	int atImageList;
-	VideoCapture inputCapture;
+	VideoCapture rightInputCapture;
+	VideoCapture leftInputCapture; 
 	InputType inputType;
 	bool goodInput;
 	int flag;
@@ -221,6 +201,8 @@ static void read(const FileNode& node, Settings& x, const Settings& default_valu
 enum { DETECTION = 0, CAPTURING = 1, CALIBRATED = 2 };
 
 void loadCameraParams(Settings& s, Mat& cameraMatrix, Mat& distCoeffs);
+void getStereoVideoFeed(Settings& s);
+void oclUndistort(oclMat& gpu_temp, oclMat& gpu_view, oclMat& gpu_map1, oclMat& gpu_map2, Mat& view, Size& imageSize, Mat& cameraMatrix, Mat& distCoeffs);
 
 int main(int argc, char* argv[])
 {
@@ -235,7 +217,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 	fs["Settings"] >> s;
-	fs.release();                                         // close Settings file
+	fs.release();  // close Settings file
 
 	if (!s.goodInput)
 	{
@@ -243,8 +225,14 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
+	getStereoVideoFeed(s);
+
+	return 0;
+}
+
+void getStereoVideoFeed(Settings& s) {
 	vector<vector<Point2f> > imagePoints;
-	Mat cameraMatrix, distCoeffs;
+	Mat cameraMatrix, distCoeffs; // Use 
 	Size imageSize;
 	int mode = s.inputType == Settings::IMAGE_LIST ? CAPTURING : DETECTION;
 	loadCameraParams(s, cameraMatrix, distCoeffs);
@@ -253,59 +241,53 @@ int main(int argc, char* argv[])
 	clock_t prevTimestamp = 0;
 	const Scalar RED(0, 0, 255), GREEN(0, 255, 0);
 	const char ESC_KEY = 27;
-
+	int screenshotIndex = 1;
 	for (int i = 0;; ++i)
 	{
-		Mat view;
+		Mat rightView;
+		Mat leftView;
 		bool blinkOutput = false;
 
-		view = s.nextImage();
+		rightView = s.nextImage(s.rightInputCapture);
+		leftView = s.nextImage(s.leftInputCapture);
 
+		// Format input image.
+		imageSize = rightView.size();
 
-		imageSize = view.size();  // Format input image.
-		if (s.flipVertical)    flip(view, view, 0);
+		if (s.flipVertical) {
+			flip(rightView, rightView, 0);
+			flip(leftView, leftView, 0);
+		}
 
 		vector<Point2f> pointBuf;
-
-
-
+		
 		//----------------------------- Output Text ------------------------------------------------
 		string msg = (mode == CAPTURING) ? "100/100" :
 			mode == CALIBRATED ? "Calibrated" : "Press 'g' to start";
 		int baseLine = 0;
 		Size textSize = getTextSize(msg, 1, 1, 1, &baseLine);
-		Point textOrigin(view.cols - 2 * textSize.width - 10, view.rows - 2 * baseLine - 10);
+		Point textOrigin(rightView.cols - 2 * textSize.width - 10, rightView.rows - 2 * baseLine - 10);
 
-		putText(view, msg, textOrigin, 1, 1, mode == CALIBRATED ? GREEN : RED);
+		putText(rightView, msg, textOrigin, 1, 1, mode == CALIBRATED ? GREEN : RED);
+		putText(leftView, msg, textOrigin, 1, 1, mode == CALIBRATED ? GREEN : RED);
 
-		if (blinkOutput)
-			bitwise_not(view, view);
+		if (blinkOutput) {
+			bitwise_not(rightView, rightView);
+			bitwise_not(leftView, leftView);
+		}
 
 		//------------------------- Video capture  output  undistorted ------------------------------
 		if (mode == CALIBRATED && s.showUndistorsed)
 		{
-			Mat temp = view.clone();
-			InputArray R = cv::noArray();
-			Mat map1 = cv::Mat(), map2 = Mat();
-			initUndistortRectifyMap(cameraMatrix, distCoeffs, R, cameraMatrix, imageSize, CV_32FC1, map1, map2);
-
-			// Load matricies as ocl-compatible matricies
-			gpu_temp.upload(temp);
-			gpu_view.upload(view);
-			gpu_map1.upload(map1);
-			gpu_map2.upload(map2);
-
-			ocl::remap(gpu_temp, gpu_view, gpu_map1, gpu_map2, INTER_NEAREST, BORDER_REPLICATE, 0);
-			
-			// Unload (only remap-prerequisite) matricies as CPU-formatted OpenCV matricies
-			gpu_view.download(view);
-
-			//undistort(temp, view, cameraMatrix, distCoeffs);
+			oclUndistort(gpu_temp, gpu_view, gpu_map1, gpu_map2, rightView, imageSize, cameraMatrix, distCoeffs);
+			oclUndistort(gpu_temp, gpu_view, gpu_map1, gpu_map2, leftView, imageSize, cameraMatrix, distCoeffs);
 		}
 
 		//------------------------------ Show image and check for input commands -------------------
-		imshow("Image View", view);
-		char key = (char)waitKey(s.inputCapture.isOpened() ? 50 : s.delay);
+		imshow("Right View", rightView);
+		imshow("Left View", leftView);
+		char key = (char)waitKey(s.rightInputCapture.isOpened() ? 50 : s.delay);
+
 
 		if (key == ESC_KEY)
 			break;
@@ -313,15 +295,38 @@ int main(int argc, char* argv[])
 		if (key == 'u' && mode == CALIBRATED)
 			s.showUndistorsed = !s.showUndistorsed;
 
-		if (s.inputCapture.isOpened() && key == 'g')
+		if (key == 's') {
+			string rFileName = "results/right_" + to_string(screenshotIndex) + string(".tiff");
+			string lFileName = "results/left_" + to_string(screenshotIndex) + string(".tiff");
+			imwrite(rFileName, rightView);
+			imwrite(lFileName, leftView);
+			screenshotIndex++;
+		}
+
+		if (s.rightInputCapture.isOpened() && key == 'g')
 		{
 			mode = CAPTURING;
 			imagePoints.clear();
 		}
 	}
+}
 
+void oclUndistort(oclMat& gpu_temp, oclMat& gpu_view, oclMat& gpu_map1, oclMat& gpu_map2, Mat& view, Size& imageSize, Mat& cameraMatrix, Mat& distCoeffs) {
+	Mat temp = view.clone();
+	InputArray R = cv::noArray();
+	Mat map1 = cv::Mat(), map2 = Mat();
+	initUndistortRectifyMap(cameraMatrix, distCoeffs, R, cameraMatrix, imageSize, CV_32FC1, map1, map2);
 
-	return 0;
+	// Load matricies as ocl-compatible matricies
+	gpu_temp.upload(temp);
+	gpu_view.upload(view);
+	gpu_map1.upload(map1);
+	gpu_map2.upload(map2);
+
+	ocl::remap(gpu_temp, gpu_view, gpu_map1, gpu_map2, INTER_NEAREST, BORDER_CONSTANT, 0);
+
+	// Unload (only remap-prerequisite) matricies as CPU-formatted OpenCV matricies
+	gpu_view.download(view);
 }
 
 // Load the specified calibration file and store camera matrix and distortion coefficients matrix
