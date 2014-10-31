@@ -233,7 +233,7 @@ int main(int argc, char* argv[])
 void getStereoVideoFeed(Settings& s) {
 	vector<vector<Point2f> > imagePoints;
 	Mat cameraMatrix, distCoeffs; // Use 
-	Size imageSize;
+	Size imageSize, rotImageSize;
 	int mode = s.inputType == Settings::IMAGE_LIST ? CAPTURING : DETECTION;
 	loadCameraParams(s, cameraMatrix, distCoeffs);
 	oclMat gpu_temp, gpu_view, gpu_map1, gpu_map2;
@@ -253,6 +253,7 @@ void getStereoVideoFeed(Settings& s) {
 
 		// Format input image.
 		imageSize = rightView.size();
+		rotImageSize = Size(imageSize.height, imageSize.width);
 
 		if (s.flipVertical) {
 			flip(rightView, rightView, 0);
@@ -281,6 +282,12 @@ void getStereoVideoFeed(Settings& s) {
 		{
 			oclUndistort(gpu_temp, gpu_view, gpu_map1, gpu_map2, rightView, imageSize, cameraMatrix, distCoeffs);
 			oclUndistort(gpu_temp, gpu_view, gpu_map1, gpu_map2, leftView, imageSize, cameraMatrix, distCoeffs);
+			
+			// flip image
+			transpose(rightView, rightView);
+			transpose(leftView, leftView);
+			flip(rightView, rightView, 1);
+			flip(leftView, leftView, 1);
 		}
 
 		//------------------------------ Show image and check for input commands -------------------
@@ -310,6 +317,7 @@ void getStereoVideoFeed(Settings& s) {
 		}
 	}
 }
+
 
 void oclUndistort(oclMat& gpu_temp, oclMat& gpu_view, oclMat& gpu_map1, oclMat& gpu_map2, Mat& view, Size& imageSize, Mat& cameraMatrix, Mat& distCoeffs) {
 	Mat temp = view.clone();
