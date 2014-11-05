@@ -88,7 +88,7 @@ public:
 			}
 			else
 			{
-				if (readStringList(rightInput, imageList))
+				if (false)
 				{
 					inputType = IMAGE_LIST;
 					nrFrames = (nrFrames < (int)imageList.size()) ? nrFrames : (int)imageList.size();
@@ -96,12 +96,15 @@ public:
 				else
 					inputType = VIDEO_FILE;
 			}
-			if (inputType == CAMERA)
+			if (inputType == CAMERA) {
 				rightInputCapture.open(rightCameraID);
 				leftInputCapture.open(leftCameraID);
-			if (inputType == VIDEO_FILE)
-				rightInputCapture.open(leftInput);
-			if (inputType != IMAGE_LIST && !rightInputCapture.isOpened())
+			}
+			else if (inputType == VIDEO_FILE) {
+				rightInputCapture.open(rightInput);
+				leftInputCapture.open(leftInput);
+			}
+			else if (inputType != IMAGE_LIST && !rightInputCapture.isOpened())
 				inputType = INVALID;
 		}
 		if (inputType == INVALID)
@@ -179,7 +182,7 @@ public:
 	vector<string> imageList;
 	int atImageList;
 	VideoCapture rightInputCapture;
-	VideoCapture leftInputCapture; 
+	VideoCapture leftInputCapture;
 	InputType inputType;
 	bool goodInput;
 	int flag;
@@ -261,7 +264,7 @@ void getStereoVideoFeed(Settings& s) {
 		}
 
 		vector<Point2f> pointBuf;
-		
+
 		//----------------------------- Output Text ------------------------------------------------
 		string msg = (mode == CAPTURING) ? "100/100" :
 			mode == CALIBRATED ? "Calibrated" : "Press 'g' to start";
@@ -284,8 +287,8 @@ void getStereoVideoFeed(Settings& s) {
 			// undistort
 			oclUndistort(gpu_temp, gpu_view, gpu_map1, gpu_map2, rightView, imageSize, cameraMatrix, distCoeffs);
 			oclUndistort(gpu_temp, gpu_view, gpu_map1, gpu_map2, leftView, imageSize, cameraMatrix, distCoeffs);
-			
-			// orient image
+
+			// orient images
 			transpose(rightView, rightView);
 			transpose(leftView, leftView);
 			flip(rightView, rightView, 1);
@@ -293,18 +296,12 @@ void getStereoVideoFeed(Settings& s) {
 
 			// detect edges (Canny)
 			Canny(rightView, rightView, 120, 180, 3, true);
-			Canny(leftView, leftView, 120, 180);
 
 			cvtColor(rightView, rightHoughMap, CV_GRAY2BGR);
 			vector<Vec2f> rightLines;
 			HoughLines(rightView, rightLines, 1, CV_PI/180, 100);
 
-			cvtColor(leftView, leftHoughMap, CV_GRAY2BGR);
-			vector<Vec2f> leftLines;
-			HoughLines(leftView, leftLines, 1, CV_PI / 180, 100);
-
 			// draw lines
-
 			for (size_t i = 0; i < rightLines.size(); i++)
 			{
 				float rho = rightLines[i][0], theta = rightLines[i][1];
@@ -317,20 +314,8 @@ void getStereoVideoFeed(Settings& s) {
 				pt2.y = cvRound(y0 - 1000 * (a));
 				line(rightHoughMap, pt1, pt2, Scalar(0, 0, 255), 3, CV_AA);
 			}
-			for (size_t i = 0; i < leftLines.size(); i++)
-			{
-				float rho = leftLines[i][0], theta = leftLines[i][1];
-				Point pt1, pt2;
-				double a = cos(theta), b = sin(theta);
-				double x0 = a*rho, y0 = b*rho;
-				pt1.x = cvRound(x0 + 1000 * (-b));
-				pt1.y = cvRound(y0 + 1000 * (a));
-				pt2.x = cvRound(x0 - 1000 * (-b));
-				pt2.y = cvRound(y0 - 1000 * (a));
-				line(leftHoughMap, pt1, pt2, Scalar(0, 0, 255), 3, CV_AA);
-			}
 			imshow("Right View", rightHoughMap);
-			imshow("Left View", leftHoughMap);
+			imshow("Left View", leftView);
 		}
 		else {
 			//------------------------------ Show image and check for input commands -------------------
@@ -365,21 +350,28 @@ void getStereoVideoFeed(Settings& s) {
 
 
 void oclUndistort(oclMat& gpu_temp, oclMat& gpu_view, oclMat& gpu_map1, oclMat& gpu_map2, Mat& view, Size& imageSize, Mat& cameraMatrix, Mat& distCoeffs) {
-	Mat temp = view.clone();
-	InputArray R = cv::noArray();
-	Mat map1 = cv::Mat(), map2 = Mat();
-	initUndistortRectifyMap(cameraMatrix, distCoeffs, R, cameraMatrix, imageSize, CV_32FC1, map1, map2);
+	if (true) {
+		Mat temp = view.clone();
+		InputArray R = cv::noArray();
+		Mat map1 = cv::Mat(), map2 = Mat();
+		initUndistortRectifyMap(cameraMatrix, distCoeffs, R, cameraMatrix, imageSize, CV_32FC1, map1, map2);
 
-	// Load matricies as ocl-compatible matricies
-	gpu_temp.upload(temp);
-	gpu_view.upload(view);
-	gpu_map1.upload(map1);
-	gpu_map2.upload(map2);
+		// Load matricies as ocl-compatible matricies
+		gpu_temp.upload(temp);
+		gpu_view.upload(view);
+		gpu_map1.upload(map1);
+		gpu_map2.upload(map2);
 
-	ocl::remap(gpu_temp, gpu_view, gpu_map1, gpu_map2, INTER_NEAREST, BORDER_CONSTANT, 0);
+		ocl::remap(gpu_temp, gpu_view, gpu_map1, gpu_map2, INTER_NEAREST, BORDER_CONSTANT, 0);
 
-	// Unload (only remap-prerequisite) matricies as CPU-formatted OpenCV matricies
-	gpu_view.download(view);
+		// Unload (only remap-prerequisite) matricies as CPU-formatted OpenCV matricies
+		gpu_view.download(view);
+	}
+	else {
+		Mat temp = view.clone();
+		undistort(temp, view, cameraMatrix, distCoeffs);
+	}
+
 }
 
 // Load the specified calibration file and store camera matrix and distortion coefficients matrix
