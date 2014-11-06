@@ -206,6 +206,8 @@ enum { DETECTION = 0, CAPTURING = 1, CALIBRATED = 2 };
 void loadCameraParams(Settings& s, Mat& cameraMatrix, Mat& distCoeffs);
 void getStereoVideoFeed(Settings& s);
 void oclUndistort(oclMat& gpu_temp, oclMat& gpu_view, oclMat& gpu_map1, oclMat& gpu_map2, Mat& view, Size& imageSize, Mat& cameraMatrix, Mat& distCoeffs);
+void regHoughLines(Mat& view, Mat& houghMap, int threshold);
+void probHoughLines(Mat& view, Mat& houghMap, int threshold, int minLineLength, int maxLineGap);
 
 int main(int argc, char* argv[])
 {
@@ -295,27 +297,24 @@ void getStereoVideoFeed(Settings& s) {
 			flip(leftView, leftView, 1);
 
 			// detect edges (Canny)
+			// Vary threshold1 and threshold2 parameters
 			Canny(rightView, rightView, 120, 180, 3, true);
+			Canny(leftView, leftView, 120, 180, 3, true);
 
 			cvtColor(rightView, rightHoughMap, CV_GRAY2BGR);
-			vector<Vec2f> rightLines;
-			HoughLines(rightView, rightLines, 1, CV_PI/180, 100);
+			cvtColor(leftView, leftHoughMap, CV_GRAY2BGR);
 
-			// draw lines
-			for (size_t i = 0; i < rightLines.size(); i++)
-			{
-				float rho = rightLines[i][0], theta = rightLines[i][1];
-				Point pt1, pt2;
-				double a = cos(theta), b = sin(theta);
-				double x0 = a*rho, y0 = b*rho;
-				pt1.x = cvRound(x0 + 1000 * (-b));
-				pt1.y = cvRound(y0 + 1000 * (a));
-				pt2.x = cvRound(x0 - 1000 * (-b));
-				pt2.y = cvRound(y0 - 1000 * (a));
-				line(rightHoughMap, pt1, pt2, Scalar(0, 0, 255), 3, CV_AA);
-			}
+			// Detect lines (regular HoughLines or probabilistic HoughLinesP)
+			// Vary threshold parameter and with HouphLinesP, minLineLength and maxLineGap
+			// Uncomment ONE and only ONE of regHoughLines or probHoughLines per view... or else!
+			// The supposed advantage of HoughLinesP is much increased speed for slightly decreased accuracy.
+			regHoughLines(rightView, rightHoughMap, 100);
+			//probHoughLines(rightView, rightHoughMap, 80, 50, 10);
+			//regHoughLines(leftView, leftHoughMap, 100);
+			probHoughLines(leftView, leftHoughMap, 80, 50, 10);
+
 			imshow("Right View", rightHoughMap);
-			imshow("Left View", leftView);
+			imshow("Left View", leftHoughMap);
 		}
 		else {
 			//------------------------------ Show image and check for input commands -------------------
@@ -345,6 +344,36 @@ void getStereoVideoFeed(Settings& s) {
 			mode = CAPTURING;
 			imagePoints.clear();
 		}
+	}
+}
+
+void probHoughLines(Mat& view, Mat& houghMap, int threshold, int minLineLength, int maxLineGap) {
+	vector<Vec4i> lines;
+	HoughLinesP(view, lines, 1, CV_PI / 180, threshold, minLineLength, maxLineGap);
+
+	for (size_t i = 0; i < lines.size(); i++)
+	{
+		Vec4i l = lines[i];
+		line(houghMap, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0, 0, 255), 3, CV_AA);
+	}
+}
+
+void regHoughLines(Mat& view, Mat& houghMap, int threshold) {
+	vector<Vec2f> lines;
+	HoughLines(view, lines, 1, CV_PI / 180, threshold);
+
+	// draw lines
+	for (size_t i = 0; i < lines.size(); i++)
+	{
+		float rho = lines[i][0], theta = lines[i][1];
+		Point pt1, pt2;
+		double a = cos(theta), b = sin(theta);
+		double x0 = a*rho, y0 = b*rho;
+		pt1.x = cvRound(x0 + 1000 * (-b));
+		pt1.y = cvRound(y0 + 1000 * (a));
+		pt2.x = cvRound(x0 - 1000 * (-b));
+		pt2.y = cvRound(y0 - 1000 * (a));
+		line(houghMap, pt1, pt2, Scalar(0, 0, 255), 3, CV_AA);
 	}
 }
 
