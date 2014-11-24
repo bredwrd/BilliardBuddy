@@ -298,8 +298,8 @@ void getStereoVideoFeed(Settings& s) {
 
 			// detect edges (Canny)
 			// Vary threshold1 and threshold2 parameters
-			Canny(rightView, rightView, 120, 180, 3, true);
-			Canny(leftView, leftView, 120, 180, 3, true);
+			Canny(rightView, rightView, 100, 180, 3, true);
+			Canny(leftView, leftView, 100, 180, 3, true);
 
 			cvtColor(rightView, rightHoughMap, CV_GRAY2BGR);
 			cvtColor(leftView, leftHoughMap, CV_GRAY2BGR);
@@ -308,10 +308,10 @@ void getStereoVideoFeed(Settings& s) {
 			// Vary threshold parameter and with HouphLinesP, minLineLength and maxLineGap
 			// Uncomment ONE and only ONE of regHoughLines or probHoughLines per view... or else!
 			// The supposed advantage of HoughLinesP is much increased speed for slightly decreased accuracy.
-			regHoughLines(rightView, rightHoughMap, 100);
-			//probHoughLines(rightView, rightHoughMap, 80, 50, 10);
+			//regHoughLines(rightView, rightHoughMap, 100);
+			probHoughLines(rightView, rightHoughMap, 80, 20, 11);
 			//regHoughLines(leftView, leftHoughMap, 100);
-			probHoughLines(leftView, leftHoughMap, 80, 50, 10);
+			probHoughLines(leftView, leftHoughMap, 80, 20, 20);
 
 			imshow("Right View", rightHoughMap);
 			imshow("Left View", leftHoughMap);
