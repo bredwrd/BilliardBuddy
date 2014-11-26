@@ -296,6 +296,9 @@ void getStereoVideoFeed(Settings& s) {
 			flip(rightView, rightView, 1);
 			flip(leftView, leftView, 1);
 
+			//Obtaining the Hough Map when it is original image in BGR format
+			Mat imgOriginal = rightView;
+
 			// detect edges (Canny)
 			// Vary threshold1 and threshold2 parameters
 			Canny(rightView, rightView, 100, 180, 3, true);
@@ -303,7 +306,7 @@ void getStereoVideoFeed(Settings& s) {
 
 			cvtColor(rightView, rightHoughMap, CV_GRAY2BGR);
 			cvtColor(leftView, leftHoughMap, CV_GRAY2BGR);
-
+			
 			// Detect lines (regular HoughLines or probabilistic HoughLinesP)
 			// Vary threshold parameter and with HouphLinesP, minLineLength and maxLineGap
 			// Uncomment ONE and only ONE of regHoughLines or probHoughLines per view... or else!
@@ -315,6 +318,58 @@ void getStereoVideoFeed(Settings& s) {
 
 			imshow("Right View", rightHoughMap);
 			imshow("Left View", leftHoughMap);
+
+			//Start of Colour Segmentation
+			//Can be used to control with trackbars the values
+			//namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
+
+			int iLowH = 38;
+			int iHighH = 130;
+
+			int iLowS = 40;
+			int iHighS = 200;
+
+			int iLowV = 30;
+			int iHighV = 200;
+
+			//Create trackbars in "Control" window
+			/*cvCreateTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
+			cvCreateTrackbar("HighH", "Control", &iHighH, 179);
+
+			cvCreateTrackbar("LowS", "Control", &iLowS, 255); //Saturation (0 - 255)
+			cvCreateTrackbar("HighS", "Control", &iHighS, 255);
+
+			cvCreateTrackbar("LowV", "Control", &iLowV, 255); //Value (0 - 255)
+			cvCreateTrackbar("HighV", "Control", &iHighV, 255);
+			*/
+
+			//Inserted this line above to where rightView is formatted
+			//Mat imgOriginal=rightView;
+
+			Mat imgHSV;
+
+			cvtColor(imgOriginal, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
+
+			Mat imgThresholded;
+
+			inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image
+
+			//morphological opening (remove small objects from the foreground)
+			erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(8, 8)));
+			dilate(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(8, 8)));
+
+			//morphological closing (fill small holes in the foreground)
+			dilate(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(8, 8)));
+			erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(8, 8)));
+
+			//Used to make the mask bigger (For our specific situation we want to make sure the mask
+			//includes the whole pool table, having it a bit bigger thant he pool table is not an issue.
+			dilate(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(30, 30)));
+
+			imshow("Thresholded Image", imgThresholded); //show the thresholded image
+			imshow("Original", imgOriginal); //show the original image
+
+			//End of Colour Segmentation
 		}
 		else {
 			//------------------------------ Show image and check for input commands -------------------
