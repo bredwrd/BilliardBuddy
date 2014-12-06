@@ -59,14 +59,17 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\PropertySheets\OpenCV.props" />
+    <Import Project="..\..\..\Property Sheets\OculusDK2.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\PropertySheets\OpenCV.props" />
+    <Import Project="..\..\..\Property Sheets\OpenCV_release.props" />
+    <Import Project="..\..\..\Property Sheets\OculusDK2.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\PropertySheets\OpenCV.props" />
+    <Import Project="..\..\..\Property Sheets\OpenCV_release.props" />
+    <Import Project="..\..\..\Property Sheets\OculusDK2.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
@@ -85,10 +88,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -121,11 +126,30 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BilliardBuddy.cpp" />
+    <ClCompile Include="CameraInterface.cpp" />
+    <ClCompile Include="FeatureDetector.cpp" />
+    <ClCompile Include="PoolTableDetector.cpp" />
+    <ClCompile Include="PreProcessor.cpp" />
+    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="TextAugmentor.cpp" />
+    <ClCompile Include="VisualAugmentor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="Logitech_C310_wide_angle_calibration.xml">
       <SubType>Designer</SubType>
     </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CameraInterface.h" />
+    <ClInclude Include="FeatureDetector.h" />
+    <ClInclude Include="BilliardBuddy.h" />
+    <ClInclude Include="Header.h" />
+    <ClInclude Include="PoolTableDetector.h" />
+    <ClInclude Include="PreProcessor.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Settings.h" />
+    <ClInclude Include="TextAugmentor.h" />
+    <ClInclude Include="VisualAugmentor.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
