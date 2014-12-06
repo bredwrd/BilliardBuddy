@@ -127,7 +127,12 @@
   <ItemGroup>
     <ClCompile Include="BilliardBuddy.cpp" />
     <ClCompile Include="CameraInterface.cpp" />
+    <ClCompile Include="FeatureDetector.cpp" />
+    <ClCompile Include="PoolTableDetector.cpp" />
+    <ClCompile Include="PreProcessor.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="TextAugmentor.cpp" />
+    <ClCompile Include="VisualAugmentor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="Logitech_C310_wide_angle_calibration.xml">
@@ -136,7 +141,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraInterface.h" />
+    <ClInclude Include="FeatureDetector.h" />
+    <ClInclude Include="BilliardBuddy.h" />
+    <ClInclude Include="Header.h" />
+    <ClInclude Include="PoolTableDetector.h" />
+    <ClInclude Include="PreProcessor.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="TextAugmentor.h" />
+    <ClInclude Include="VisualAugmentor.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

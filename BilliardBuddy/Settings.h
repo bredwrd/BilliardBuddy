@@ -6,38 +6,42 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-
-using namespace std;
-using namespace cv;
-
 class Settings
 {
 public:
-	Settings() : goodInput(false) {}
+	Settings();
 	~Settings();
 
 	enum Pattern { NOT_EXISTING, CHESSBOARD, CIRCLES_GRID, ASYMMETRIC_CIRCLES_GRID };
 	enum InputType { INVALID, CAMERA, VIDEO_FILE, IMAGE_LIST };
 
-	string outputFileName;      // The name of the file where to write
-	bool showUndistorsed;       // Show undistorted images after calibration
-	string rightInput;               // The input ->
-	string leftInput;
+	std::string outputFileName;      // The name of the file where to write
+	std::string rightInput;               // The input ->
+	std::string leftInput;
 
 	int rightCameraID;
 	int leftCameraID;
 
-	VideoCapture rightInputCapture;
-	VideoCapture leftInputCapture;
+	cv::VideoCapture rightInputCapture;
+	cv::VideoCapture leftInputCapture;
 	InputType inputType;
 	bool goodInput;
 	int flag;
 
-	void read(const FileNode& node); //Read serialization for this class
-	void interprate();
-	Mat nextImage(VideoCapture& captureSource);
-	static bool readStringList(const string& filename, vector<string>& l);
+	void read(const cv::FileNode& node); //Read serialization for this class
+	void validate();
+	static bool readStringList(const std::string& filename, cv::vector<std::string>& l);
+
+	// Accessors & Mutators
+	cv::Mat getCameraMatrix();
+	cv::Mat getDistCoeffs();
 
 private:
-	string patternToUse;
+	std::string patternToUse;
+	cv::Mat cameraMatrix;
+	cv::Mat distCoeffs;
+
+	void readApplicationParams(const cv::FileNode& node);
+	void readCameraParams();
+
 };
