@@ -10,7 +10,7 @@ Settings::~Settings()
 
 }
 
-void Settings::read(const cv::FileNode& node)                          //Read serialization for this class
+void Settings::read(const cv::FileNode& node) //Read serialization for this class
 {
 	readApplicationParams(node);
 	readCameraParams();

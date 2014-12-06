@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 }
 
 void BilliardBuddy::process(Settings& settings) {
-	bool showUndistorted = true;
+	bool preprocess = true;
 
 	// Initialize CameraInterface
 	CameraInterface cameraInterface = CameraInterface(settings);
@@ -47,43 +47,53 @@ void BilliardBuddy::process(Settings& settings) {
 	// Initialize Visual Augmentor(s)
 	TextAugmentor textAugmentor = TextAugmentor();
 
-	clock_t prevTimestamp = 0;
-	const char ESC_KEY = 27;
-
 	// Processing Loop
-	for (int i = 0;; ++i)
+	bool result;
+	do {
+		result = processFrame(preprocess, cameraInterface, preProcessor, poolTableDetector, textAugmentor);
+		result = pollKeyboard(preprocess);
+
+	} while (result == true);
+}
+
+bool BilliardBuddy::pollKeyboard(bool& preprocess)
+{
+	// Check for keyboard inputs.
+	char key = (char)waitKey(1);
+	const char ESC_KEY = 27;
+	if (key == 'u')
+		preprocess = !preprocess;
+	if (key == ESC_KEY)
+		return false;
+
+	return true;
+}
+
+bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, TextAugmentor textAugmentor) {
+	// Fetch feed from camera interface.
+	Mat leftFrame, rightFrame;
+	cameraInterface.getRightFrame(rightFrame);
+	cameraInterface.getLeftFrame(leftFrame);
+
+	// Pre-process feed.
+	if (preprocess)
 	{
-		// Fetch feed from camera interface.
-		Mat leftFrame, rightFrame;
-		cameraInterface.getRightFrame(rightFrame);
-		cameraInterface.getLeftFrame(leftFrame);
-
-		// Pre-process feed.
-		if (showUndistorted)
-		{
-			preProcessor.preProcess(leftFrame);
-			preProcessor.preProcess(rightFrame);
-		}
-
-		// Detect features.
-		poolTableDetector.detect(rightFrame);
-
-		// Visually augment (with text as an example).
-		textAugmentor.augment(rightFrame);
-
-		// Display feed to user.
-		imshow("Left", leftFrame);
-		imshow("Right", rightFrame);
-
-		// Check for keyboard inputs.
-		char key = (char)waitKey(20);
-
-		if (key == ESC_KEY)
-			break;
-
-		if (key == 'u')
-			showUndistorted = !showUndistorted;
+		preProcessor.preProcess(leftFrame);
+		preProcessor.preProcess(rightFrame);
 	}
+
+	// Detect features.
+	poolTableDetector.detect(rightFrame);
+
+	// Visually augment (with text as an example).
+	textAugmentor.augment(rightFrame);
+
+	// Display feed to user.
+	imshow("Left", leftFrame);
+	imshow("Right", rightFrame);
+
+	// check for errors and return false at some point
+	return true;
 }
 
 void BilliardBuddy::help()

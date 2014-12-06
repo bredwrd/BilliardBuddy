@@ -27,7 +27,8 @@
 class BilliardBuddy
 {
 private:
-	enum { DETECTION = 0, CAPTURING = 1, CALIBRATED = 2 };
+	static bool processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, TextAugmentor textAugmentor);
+	static bool pollKeyboard(bool& preprocess);
 
 public:
 	static void help();
