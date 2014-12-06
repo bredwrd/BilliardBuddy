@@ -11,8 +11,7 @@ public:
 	CameraInterface(Settings& settings);
 	~CameraInterface();
 
-	void getLeftFrame(cv::Mat& frame);
-	void getRightFrame(cv::Mat& frame);
+	void getFrames(cv::Mat& leftFrame, cv::Mat& rightFrame);
 
 private:
 	cv::VideoCapture leftVideoCapture;
@@ -20,7 +19,8 @@ private:
 	cv::Mat leftFrame;
 	cv::Mat rightFrame;
 
-	void getFrame(cv::VideoCapture& captureSource, cv::Mat& frame);
+	void grabFrames();
+	void retrieveFrames(cv::Mat& leftFrame, cv::Mat& rightFrame);
 	void initializeVideoSources(Settings& settings);
 };
 

@@ -10,21 +10,27 @@ CameraInterface::~CameraInterface()
 
 }
 
-void CameraInterface::getLeftFrame(cv::Mat& frame) {
-	getFrame(leftVideoCapture, frame);
-}
-
-void CameraInterface::getRightFrame(cv::Mat& frame) {
-	getFrame(rightVideoCapture, frame);
-}
-
-void CameraInterface::getFrame(cv::VideoCapture& captureSource, cv::Mat& frame)
+void CameraInterface::grabFrames()
 {
-	if (captureSource.isOpened())
+		leftVideoCapture.grab();
+		rightVideoCapture.grab();
+}
+
+void CameraInterface::retrieveFrames(cv::Mat& leftFrame, cv::Mat& rightFrame)
+{
+	leftVideoCapture.retrieve(leftFrame);
+	rightVideoCapture.retrieve(rightFrame);
+}
+
+void CameraInterface::getFrames(cv::Mat& leftFrame, cv::Mat& rightFrame)
+{
+	if (leftVideoCapture.isOpened() && rightVideoCapture.isOpened())
 	{
-		captureSource >> frame;
+		grabFrames();
+		retrieveFrames(leftFrame, rightFrame);
 	}
 }
+
 
 void CameraInterface::initializeVideoSources(Settings& settings) {
 	if (settings.rightInput[0] >= '0' && settings.leftInput[0] <= '9')

@@ -72,8 +72,7 @@ bool BilliardBuddy::pollKeyboard(bool& preprocess)
 bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, TextAugmentor textAugmentor) {
 	// Fetch feed from camera interface.
 	Mat leftFrame, rightFrame;
-	cameraInterface.getRightFrame(rightFrame);
-	cameraInterface.getLeftFrame(leftFrame);
+	cameraInterface.getFrames(leftFrame, rightFrame);
 
 	// Pre-process feed.
 	if (preprocess)
