@@ -8,13 +8,13 @@ PoolTableDetector::~PoolTableDetector()
 {
 }
 
-void PoolTableDetector::detect(cv::Mat& frame)
+void PoolTableDetector::detect(cv::Mat frame)
 {
 	detectWithColourSegmentation(frame);
-	// detectWithLineDetection(frame);
+	detectWithLineDetection(frame);
 }
 
-void PoolTableDetector::detectWithColourSegmentation(cv::Mat& frame)
+void PoolTableDetector::detectWithColourSegmentation(cv::Mat frame)
 {
 	//Can be used to control with trackbars the values
 	int iLowH = 38;
@@ -46,11 +46,11 @@ void PoolTableDetector::detectWithColourSegmentation(cv::Mat& frame)
 	//includes the whole pool table, having it a bit bigger thant he pool table is not an issue.
 	dilate(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(30, 30)));
 
-	imshow("Thresholded Image", imgThresholded); //show the thresholded image
-	imshow("Original", frame); //show the original image
+	imshow("HSI Segmentation View", imgThresholded); //show the thresholded image
+	//imshow("Original", frame); //show the original image
 }
 
-void PoolTableDetector::detectWithLineDetection(cv::Mat& frame)
+void PoolTableDetector::detectWithLineDetection(cv::Mat frame)
 {
 	// detect edges (Canny)
 	// Vary threshold1 and threshold2 parameters
@@ -65,7 +65,7 @@ void PoolTableDetector::detectWithLineDetection(cv::Mat& frame)
 	//regHoughLines(frame, houghMap, 100);
 	probHoughLines(frame, houghMap, 80, 20, 11);
 
-	imshow("Right View", houghMap);
+	imshow("Hough View", houghMap);
 }
 
 

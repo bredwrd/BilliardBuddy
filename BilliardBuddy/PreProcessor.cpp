@@ -11,6 +11,7 @@ PreProcessor::~PreProcessor()
 void PreProcessor::preProcess(Mat& frame)
 {
 	oclUndistort(frame);
+	//cpuUndistort(frame);
 	transposeImage(frame);
 }
 

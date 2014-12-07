@@ -9,15 +9,15 @@ class PoolTableDetector :
 	public virtual billbud::FeatureDetector
 {
 private:
-	void detectWithColourSegmentation(cv::Mat& frame);
-	void detectWithLineDetection(cv::Mat& frame);
+	void detectWithColourSegmentation(cv::Mat frame);
+	void detectWithLineDetection(cv::Mat frame);
 
 	void regHoughLines(cv::Mat& view, cv::Mat& houghMap, int threshold);
 	void probHoughLines(cv::Mat& view, cv::Mat& houghMap, int threshold, int minLineLength, int maxLineGap);
 
 public:
 	PoolTableDetector();
-	void detect(cv::Mat& frame);
+	void detect(cv::Mat frame);
 	~PoolTableDetector();
 };
 

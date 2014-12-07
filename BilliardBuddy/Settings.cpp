@@ -86,5 +86,3 @@ cv::Mat Settings::getDistCoeffs()
 {
 	return distCoeffs;
 }
-
-
