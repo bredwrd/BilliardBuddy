@@ -134,6 +134,7 @@
     <ClCompile Include="PoolTableDetector.cpp" />
     <ClCompile Include="PreProcessor.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="CueDetector.cpp" />
     <ClCompile Include="TextAugmentor.cpp" />
     <ClCompile Include="VisualAugmentor.cpp" />
   </ItemGroup>
@@ -146,7 +147,7 @@
     <ClInclude Include="CameraInterface.h" />
     <ClInclude Include="FeatureDetector.h" />
     <ClInclude Include="BilliardBuddy.h" />
-    <ClInclude Include="Header.h" />
+    <ClInclude Include="CueDetector.h" />
     <ClInclude Include="PoolTableDetector.h" />
     <ClInclude Include="PreProcessor.h" />
     <ClInclude Include="resource.h" />

@@ -39,6 +39,9 @@
     <ClCompile Include="TextAugmentor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CueDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="Logitech_C310_wide_angle_calibration.xml">
@@ -67,13 +70,13 @@
     <ClInclude Include="BilliardBuddy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Header.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VisualAugmentor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TextAugmentor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CueDetector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

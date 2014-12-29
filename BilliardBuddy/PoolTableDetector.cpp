@@ -65,7 +65,7 @@ void PoolTableDetector::detectWithLineDetection(cv::Mat frame)
 	//regHoughLines(frame, houghMap, 100);
 	probHoughLines(frame, houghMap, 80, 20, 11);
 
-	imshow("Hough View", houghMap);
+	imshow("Hough Table View", houghMap);
 }
 
 

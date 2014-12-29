@@ -43,6 +43,7 @@ void BilliardBuddy::process(Settings& settings) {
 
 	// Initialize Feature Detector(s)
 	PoolTableDetector poolTableDetector = PoolTableDetector();
+	CueDetector cueDetector = CueDetector();
 
 	// Initialize Visual Augmentor(s)
 	TextAugmentor textAugmentor = TextAugmentor();
@@ -50,7 +51,7 @@ void BilliardBuddy::process(Settings& settings) {
 	// Processing Loop
 	bool result;
 	do {
-		result = processFrame(preprocess, cameraInterface, preProcessor, poolTableDetector, textAugmentor);
+		result = processFrame(preprocess, cameraInterface, preProcessor, poolTableDetector, cueDetector, textAugmentor);
 		result = pollKeyboard(preprocess);
 
 	} while (result == true);
@@ -69,7 +70,7 @@ bool BilliardBuddy::pollKeyboard(bool& preprocess)
 	return true;
 }
 
-bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, TextAugmentor textAugmentor) {
+bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, CueDetector& cueDetector, TextAugmentor textAugmentor) {
 	// Fetch feed from camera interface.
 	Mat leftFrame, rightFrame;
 	cameraInterface.getFrames(leftFrame, rightFrame);
@@ -83,6 +84,8 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 
 	// Detect features.
 	poolTableDetector.detect(rightFrame);
+	cueDetector.detect(rightFrame);
+	
 
 	// Visually augment (with text as an example).
 	textAugmentor.augment(rightFrame);
