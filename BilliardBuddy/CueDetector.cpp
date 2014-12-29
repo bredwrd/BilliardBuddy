@@ -11,7 +11,7 @@ CueDetector::~CueDetector()
 void CueDetector::detect(cv::Mat frame)
 {
 	cv::Mat croppedFrame = frame.clone(); // copy so we don't overwrite the user's view with GaussianBlur's blur call.
-	croppedFrame = croppedFrame(cv::Rect(30, 320, 200, 280)); // Crop the image for the typical location of the cue.
+	croppedFrame = croppedFrame(cv::Rect(CROP_X, CROP_Y, CROP_WIDTH, CROP_HEIGHT)); // Crop the image for the typical location of the cue.
 	cv::imshow("CueDetector", croppedFrame); //show the thresholded image
 	GaussianBlur(croppedFrame);
 	hsiSegment(croppedFrame);
@@ -20,8 +20,6 @@ void CueDetector::detect(cv::Mat frame)
 	probHoughLines(croppedFrame, 50, 80, 35);
 
 	imshow("Cue view", croppedFrame);
-
-	//CannyHoughLineDetect(croppedFrame);
 }
 
 void CueDetector::probHoughLines(cv::Mat& frame, int threshold, int minLength, int maxGap) {

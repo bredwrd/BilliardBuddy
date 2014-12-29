@@ -15,6 +15,11 @@ private:
 	void CueDetector::skeleton(cv::Mat& frame);
 	void CueDetector::GaussianBlur(cv::Mat& frame);
 	void CueDetector::hsiSegment(cv::Mat& frame);
+	static const int CROP_X = 30;
+	static const int CROP_Y = 320;
+	static const int CROP_WIDTH = 420;
+	static const int CROP_HEIGHT = 280;
+	cv::vector<cv::Vec4i> cueLine;
 
 public:
 	CueDetector();
