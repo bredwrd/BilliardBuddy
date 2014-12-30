@@ -14,10 +14,11 @@ private:
 
 	void regHoughLines(cv::Mat& view, cv::Mat& houghMap, int threshold);
 	void probHoughLines(cv::Mat& view, cv::Mat& houghMap, int threshold, int minLineLength, int maxLineGap);
+	cv::vector<cv::Vec2i> pockets;
 
 public:
 	PoolTableDetector();
-	void detect(cv::Mat frame);
+	cv::vector<cv::Vec2i> detect(cv::Mat frame);
 	~PoolTableDetector();
 };
 

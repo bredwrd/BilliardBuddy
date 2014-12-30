@@ -9,7 +9,7 @@ namespace billbud
 	{
 	public:
 		FeatureDetector();
-		virtual void detect(cv::Mat frame) = 0;
+		virtual cv::vector<cv::Vec2i> detect(cv::Mat frame) = 0; // returns a vector of 2D vectors (pixel points)
 		virtual ~FeatureDetector();
 	};
 }

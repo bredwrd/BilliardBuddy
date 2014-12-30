@@ -8,10 +8,11 @@ PoolTableDetector::~PoolTableDetector()
 {
 }
 
-void PoolTableDetector::detect(cv::Mat frame)
+cv::vector<cv::Vec2i> PoolTableDetector::detect(cv::Mat frame)
 {
 	detectWithColourSegmentation(frame);
-	detectWithLineDetection(frame);
+	//detectWithLineDetection(frame);
+	return pockets; // TODO- populate vector
 }
 
 void PoolTableDetector::detectWithColourSegmentation(cv::Mat frame)
@@ -46,8 +47,9 @@ void PoolTableDetector::detectWithColourSegmentation(cv::Mat frame)
 	//includes the whole pool table, having it a bit bigger thant he pool table is not an issue.
 	dilate(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(30, 30)));
 
-	imshow("HSI Segmentation View", imgThresholded); //show the thresholded image
-	//imshow("Original", frame); //show the original image
+	cv::Mat maskedFrame;
+	frame.copyTo(maskedFrame, imgThresholded);
+	imshow("Masked Pool Table", maskedFrame);
 }
 
 void PoolTableDetector::detectWithLineDetection(cv::Mat frame)

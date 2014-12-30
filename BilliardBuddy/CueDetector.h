@@ -19,11 +19,11 @@ private:
 	static const int CROP_Y = 320;
 	static const int CROP_WIDTH = 420;
 	static const int CROP_HEIGHT = 280;
-	cv::vector<cv::Vec4i> cueLine;
+	cv::vector<cv::Vec2i> cueLine;
 
 public:
 	CueDetector();
-	void detect(cv::Mat frame);
+	cv::vector<cv::Vec2i> detect(cv::Mat frame);
 	~CueDetector();
 };
 
