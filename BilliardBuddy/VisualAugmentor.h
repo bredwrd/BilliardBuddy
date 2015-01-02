@@ -8,6 +8,6 @@ public:
 	VisualAugmentor();
 	virtual ~VisualAugmentor();
 
-	virtual void augment(cv::Mat& frame) = 0;
+	virtual void augment(cv::Mat& frame, cv::vector<cv::Vec2i> points); // length of points vector depends on application
 };
 

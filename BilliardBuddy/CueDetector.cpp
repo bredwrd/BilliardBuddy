@@ -11,15 +11,22 @@ CueDetector::~CueDetector()
 
 cv::vector<cv::Vec2i> CueDetector::detect(cv::Mat frame)
 {
+	// Reset cueLines.
+	cueLine[0] = cv::Vec2i(0, 0);
+	cueLine[1] = cv::Vec2i(0, 0);
+
 	cv::Mat croppedFrame = frame.clone(); // copy so we don't overwrite the user's view with GaussianBlur's blur call.
 	croppedFrame = croppedFrame(cv::Rect(CROP_X, CROP_Y, CROP_WIDTH, CROP_HEIGHT)); // Crop the image for the typical location of the cue.
 	GaussianBlur(croppedFrame);
 	hsiSegment(croppedFrame);
 	skeleton(croppedFrame);
 	//regHoughLines(croppedFrame, 120);
-	probHoughLines(croppedFrame, 50, 80, 35);
+	probHoughLines(croppedFrame, 50, 80, 40);
 
 	imshow("Cue view", croppedFrame);
+	
+	cv::line(frame, cv::Point(cueLine[0][0], cueLine[0][1]), cv::Point(cueLine[1][0], cueLine[1][1]), cv::Scalar(0, 0, 255), 3, CV_AA);
+
 	return cueLine;
 }
 
@@ -33,10 +40,6 @@ void CueDetector::probHoughLines(cv::Mat& frame, int threshold, int minLength, i
 	for (size_t i = 0; i < lines.size(); i++)
 	{
 		line(houghMap, cv::Point(lines[i][0], lines[i][1]), cv::Point(lines[i][2], lines[i][3]), cv::Scalar(0, 0, 255), 3, CV_AA);
-	}
-
-	if (lines.size() == 1) {
-		cv::Vec4i l = lines[0];
 
 		// Convert cropped coords to global coords.
 		cueLine[0] = cv::Vec2i(lines[0][0] + CROP_X, lines[0][1] + CROP_Y);

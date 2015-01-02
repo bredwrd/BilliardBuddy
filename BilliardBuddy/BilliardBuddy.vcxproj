@@ -135,6 +135,7 @@
     <ClCompile Include="PreProcessor.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="CueDetector.cpp" />
+    <ClCompile Include="CueAugmentor.cpp" />
     <ClCompile Include="TextAugmentor.cpp" />
     <ClCompile Include="VisualAugmentor.cpp" />
   </ItemGroup>
@@ -148,6 +149,7 @@
     <ClInclude Include="FeatureDetector.h" />
     <ClInclude Include="BilliardBuddy.h" />
     <ClInclude Include="CueDetector.h" />
+    <ClInclude Include="CueAugmentor.h" />
     <ClInclude Include="PoolTableDetector.h" />
     <ClInclude Include="PreProcessor.h" />
     <ClInclude Include="resource.h" />

@@ -42,6 +42,9 @@
     <ClCompile Include="CueDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CueAugmentor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="Logitech_C310_wide_angle_calibration.xml">
@@ -77,6 +80,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CueDetector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CueAugmentor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
