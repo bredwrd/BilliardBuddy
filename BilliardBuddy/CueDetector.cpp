@@ -21,57 +21,62 @@ cv::vector<cv::Vec2i> CueDetector::detect(cv::Mat frame)
 	hsiSegment(croppedFrame);
 	skeleton(croppedFrame);
 	//regHoughLines(croppedFrame, 120);
-	probHoughLines(croppedFrame, 50, 80, 40);
+	probHoughLinesCueSegments(croppedFrame);
 
-	imshow("Cue view", croppedFrame);
-	
 	cv::line(frame, cv::Point(cueLine[0][0], cueLine[0][1]), cv::Point(cueLine[1][0], cueLine[1][1]), cv::Scalar(0, 0, 255), 3, CV_AA);
 
 	return cueLine;
 }
 
-void CueDetector::probHoughLines(cv::Mat& frame, int threshold, int minLength, int maxGap) {
+void CueDetector::probHoughLinesCueSegments(cv::Mat& frame) {
+	// Finds segments of a cue interrupted by a hand.
 	cv::vector<cv::Vec4i> lines;
-	HoughLinesP(frame, lines, 1, CV_PI / 180, threshold, minLength, maxGap);
+	HoughLinesP(frame, lines, 1, CV_PI / 180, HOUGH_THRESHOLD, CUE_SEGMENT_MIN_LENGTH, CUE_SEGMENT_MAX_GAP);
 
-	cv::Mat houghMap;
-	cvtColor(frame, houghMap, CV_GRAY2BGR);
+	cv::Mat houghMap(frame.size(), CV_8UC1, cv::Scalar(0));
 
 	for (size_t i = 0; i < lines.size(); i++)
 	{
-		line(houghMap, cv::Point(lines[i][0], lines[i][1]), cv::Point(lines[i][2], lines[i][3]), cv::Scalar(0, 0, 255), 3, CV_AA);
-
-		// Convert cropped coords to global coords.
-		cueLine[0] = cv::Vec2i(lines[0][0] + CROP_X, lines[0][1] + CROP_Y);
-		cueLine[1] = cv::Vec2i(lines[0][2] + CROP_X, lines[0][3] + CROP_Y);
+		line(houghMap, cv::Point(lines[i][0], lines[i][1]), cv::Point(lines[i][2], lines[i][3]), cv::Scalar(255), 1, CV_AA);
 	}
+
+	imshow("Cue Segment HoughMap", houghMap);
+
+	mergeCueSegments(houghMap);
+
+
 
 	frame = houghMap.clone();
 }
 
-void CueDetector::regHoughLines(cv::Mat& frame, int threshold) {
-	cv::vector<cv::Vec2f> lines;
-	HoughLines(frame, lines, 1, CV_PI / 180, threshold);
+void CueDetector::mergeCueSegments(cv::Mat& frame)
+{
+	// combines two cue segments into a single line segment.
+	cv::vector<cv::Vec4i> lines;
+	HoughLinesP(frame, lines, 1, CV_PI / 180, 50, 25, 100);
 
-	// Prepare Hough map.
-	cv::Mat houghMap;
-	cvtColor(frame, houghMap, CV_GRAY2BGR);
 
-	// Draw Hough lines.
+	// Calculate the lengths of all lines.
+	int maxLengthIndex = -1;
+	int maxSquaredLength = -1;
+	cv::Mat houghMap(frame.size(), CV_8UC3, cv::Scalar(0));
 	for (size_t i = 0; i < lines.size(); i++)
 	{
-		float rho = lines[i][0], theta = lines[i][1];
-		cv::Point pt1, pt2;
-		double a = cos(theta), b = sin(theta);
-		double x0 = a*rho, y0 = b*rho;
-		pt1.x = cvRound(x0 + 1000 * (-b));
-		pt1.y = cvRound(y0 + 1000 * (a));
-		pt2.x = cvRound(x0 - 1000 * (-b));
-		pt2.y = cvRound(y0 - 1000 * (a));
-		line(houghMap, pt1, pt2, cv::Scalar(0, 0, 255), 3, CV_AA);
+		line(houghMap, cv::Point(lines[i][0], lines[i][1]), cv::Point(lines[i][2], lines[i][3]), cv::Scalar(255, 255, 255), 1, CV_AA);
+		int squaredLength = (lines[i][0] - lines[i][2]) + (lines[i][1] - lines[i][3]);
+
+		if (squaredLength > maxSquaredLength)
+		{
+			maxSquaredLength = squaredLength;
+			maxLengthIndex = i;
+
+			// Convert cropped coords to global coords.
+			cueLine[0] = cv::Vec2i(lines[i][0] + CROP_X, lines[i][1] + CROP_Y);
+			cueLine[1] = cv::Vec2i(lines[i][2] + CROP_X, lines[i][3] + CROP_Y);
+		}
 	}
 
-	frame = houghMap.clone();
+	imshow("Merged Cue HoughMap", houghMap);
 }
 
 void CueDetector::hsiSegment(cv::Mat& frame)
