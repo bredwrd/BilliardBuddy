@@ -152,7 +152,6 @@
     <ClInclude Include="CueAugmentor.h" />
     <ClInclude Include="PoolTableDetector.h" />
     <ClInclude Include="PreProcessor.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="TextAugmentor.h" />
     <ClInclude Include="VisualAugmentor.h" />
