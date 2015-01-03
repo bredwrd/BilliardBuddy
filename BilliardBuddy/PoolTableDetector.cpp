@@ -10,15 +10,15 @@ PoolTableDetector::~PoolTableDetector()
 
 cv::vector<cv::Vec2i> PoolTableDetector::detect(cv::Mat frame)
 {
-	detectWithColourSegmentation(frame);
-	//detectWithLineDetection(frame);
-	return pockets; // TODO- populate vector
+	detectTableWithColourSegmentation(frame);
+	detectWithLineDetection(frame);
+	return pockets; // TODO- populate vector containing points of pockets
 }
 
-void PoolTableDetector::detectWithColourSegmentation(cv::Mat frame)
+void PoolTableDetector::detectTableWithColourSegmentation(cv::Mat& frame)
 {
 	//Can be used to control with trackbars the values
-	int iLowH = 38;
+	int iLowH = 40;
 	int iHighH = 130;
 
 	int iLowS = 40;
@@ -36,8 +36,9 @@ void PoolTableDetector::detectWithColourSegmentation(cv::Mat frame)
 	inRange(imgHSV, cv::Scalar(iLowH, iLowS, iLowV), cv::Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image
 
 	//morphological opening (remove small objects from the foreground)
-	erode(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(8, 8)));
-	dilate(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(8, 8)));
+	// needs more filtering
+	erode(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16, 16)));
+	dilate(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16, 16)));
 
 	//morphological closing (fill small holes in the foreground)
 	dilate(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(8, 8)));
@@ -50,6 +51,7 @@ void PoolTableDetector::detectWithColourSegmentation(cv::Mat frame)
 	cv::Mat maskedFrame;
 	frame.copyTo(maskedFrame, imgThresholded);
 	imshow("Masked Pool Table", maskedFrame);
+	imshow("Pool Table Mask", imgThresholded);
 }
 
 void PoolTableDetector::detectWithLineDetection(cv::Mat frame)
@@ -58,13 +60,9 @@ void PoolTableDetector::detectWithLineDetection(cv::Mat frame)
 	// Vary threshold1 and threshold2 parameters
 	Canny(frame, frame, 100, 180, 3, true);
 
-	// Detect lines (regular HoughLines or probabilistic HoughLinesP)
-	// Vary threshold parameter and with HouphLinesP, minLineLength and maxLineGap
-	// Uncomment ONE and only ONE of regHoughLines or probHoughLines per view... or else!
-	// The supposed advantage of HoughLinesP is much increased speed for slightly decreased accuracy.
+	// Detect lines (HoughLinesP)
 	cv::Mat houghMap;
 	cvtColor(frame, houghMap, CV_GRAY2BGR);
-	//regHoughLines(frame, houghMap, 100);
 	probHoughLines(frame, houghMap, 80, 20, 11);
 
 	imshow("Hough Table View", houghMap);

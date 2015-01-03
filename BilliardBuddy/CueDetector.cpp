@@ -44,8 +44,6 @@ void CueDetector::probHoughLinesCueSegments(cv::Mat& frame) {
 
 	mergeCueSegments(houghMap);
 
-
-
 	frame = houghMap.clone();
 }
 
