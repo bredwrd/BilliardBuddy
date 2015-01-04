@@ -11,7 +11,6 @@ PoolTableDetector::~PoolTableDetector()
 cv::vector<cv::Vec2i> PoolTableDetector::detect(cv::Mat frame)
 {
 	detectTableWithColourSegmentation(frame);
-	detectWithLineDetection(frame);
 	return pockets; // TODO- populate vector containing points of pockets
 }
 
@@ -31,43 +30,54 @@ void PoolTableDetector::detectTableWithColourSegmentation(cv::Mat& frame)
 
 	cvtColor(frame, imgHSV, cv::COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
 
-	cv::Mat imgThresholded;
+	cv::Mat tableMask;
 
-	inRange(imgHSV, cv::Scalar(iLowH, iLowS, iLowV), cv::Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image
+	inRange(imgHSV, cv::Scalar(iLowH, iLowS, iLowV), cv::Scalar(iHighH, iHighS, iHighV), tableMask); //Threshold the image
 
 	//morphological opening (remove small objects from the foreground)
 	// needs more filtering
-	erode(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16, 16)));
-	dilate(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16, 16)));
+	erode(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16, 16)));
+	dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16, 16)));
 
 	//morphological closing (fill small holes in the foreground)
-	dilate(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(8, 8)));
-	erode(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(8, 8)));
+	dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16, 16)));
+	erode(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16, 16)));
 
-	//Used to make the mask bigger (For our specific situation we want to make sure the mask
-	//includes the whole pool table, having it a bit bigger thant he pool table is not an issue.
-	dilate(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(30, 30)));
+	// Dilate to include balloon markers.
+	dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(50, 50)));
+
 
 	cv::Mat maskedFrame;
-	frame.copyTo(maskedFrame, imgThresholded);
+	frame.copyTo(maskedFrame, tableMask);
 	imshow("Masked Pool Table", maskedFrame);
-	imshow("Pool Table Mask", imgThresholded);
+
+	detectTableEdge(frame, tableMask);
 }
 
-void PoolTableDetector::detectWithLineDetection(cv::Mat frame)
+void PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& tableMask)
 {
-	// detect edges (Canny)
-	// Vary threshold1 and threshold2 parameters
-	Canny(frame, frame, 100, 180, 3, true);
+	// Thin the edge of the pool table colour.
+	Canny(tableMask, tableMask, 100, 180, 3, true);
 
-	// Detect lines (HoughLinesP)
-	cv::Mat houghMap;
-	cvtColor(frame, houghMap, CV_GRAY2BGR);
-	probHoughLines(frame, houghMap, 80, 20, 11);
+	// Expand pool edge to include some padding to contain the rail.
+	dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(50, 50)));
 
-	imshow("Hough Table View", houghMap);
+	cv::Mat maskedEdgeFrame;
+	frame.copyTo(maskedEdgeFrame, tableMask);
+	imshow("Rail Edge", maskedEdgeFrame);
+
+	//cv::Mat houghMap;
+	//tableMask.copyTo(houghMap);
+
+	//cv::vector<cv::Vec4i> lines;
+	//HoughLinesP(tableMask, lines, 1, CV_PI / 180, 300, 100, 20);
+	//for (size_t i = 0; i < lines.size(); i++)
+	//{
+	//	cv::Vec4i l = lines[i];
+	//	line(maskedEdgeFrame, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0, 0, 255), 1, CV_AA);
+	//}
+	//imshow("Rail Edge Hough", maskedEdgeFrame);
 }
-
 
 void PoolTableDetector::probHoughLines(cv::Mat& frame, cv::Mat& houghMap, int threshold, int minLineLength, int maxLineGap) {
 	cv::vector<cv::Vec4i> lines;

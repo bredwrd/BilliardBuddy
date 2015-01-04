@@ -40,8 +40,6 @@ void CueDetector::probHoughLinesCueSegments(cv::Mat& frame) {
 		line(houghMap, cv::Point(lines[i][0], lines[i][1]), cv::Point(lines[i][2], lines[i][3]), cv::Scalar(255), 1, CV_AA);
 	}
 
-	imshow("Cue Segment HoughMap", houghMap);
-
 	mergeCueSegments(houghMap);
 
 	frame = houghMap.clone();
@@ -73,8 +71,6 @@ void CueDetector::mergeCueSegments(cv::Mat& frame)
 			cueLine[1] = cv::Vec2i(lines[i][2] + CROP_X, lines[i][3] + CROP_Y);
 		}
 	}
-
-	imshow("Merged Cue HoughMap", houghMap);
 }
 
 void CueDetector::hsiSegment(cv::Mat& frame)
