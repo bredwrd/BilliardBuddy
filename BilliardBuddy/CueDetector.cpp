@@ -42,6 +42,8 @@ void CueDetector::probHoughLinesCueSegments(cv::Mat& frame) {
 
 	mergeCueSegments(houghMap);
 
+	imshow("Cue Segments", houghMap);
+
 	frame = houghMap.clone();
 }
 
@@ -71,15 +73,17 @@ void CueDetector::mergeCueSegments(cv::Mat& frame)
 			cueLine[1] = cv::Vec2i(lines[i][2] + CROP_X, lines[i][3] + CROP_Y);
 		}
 	}
+
+	imshow("Cue Lines", houghMap);
 }
 
 void CueDetector::hsiSegment(cv::Mat& frame)
 {
 	//Can be used to control with trackbars the values
 	int minH = 22;
-	int maxH = 62;
+	int maxH = 100;
 
-	int minS = 14;
+	int minS = 1;
 	int maxS = 166;
 
 	int minV = 215;
@@ -100,6 +104,8 @@ void CueDetector::hsiSegment(cv::Mat& frame)
 	cv::Mat maskedFrame;
 	frame.copyTo(maskedFrame, hsvMask);
 	frame = maskedFrame.clone();
+
+	imshow("HSI Cue", frame);
 }
 
 void CueDetector::GaussianBlur(cv::Mat& frame)
