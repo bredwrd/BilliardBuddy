@@ -12,6 +12,9 @@ void PoolTableDetector::detect(cv::Mat frame)
 {
 	detectWithColourSegmentation(frame);
 	detectWithLineDetection(frame);
+
+	//Detect pink balloons
+	detectPocketsWithColourSegmentation(frame);
 }
 
 void PoolTableDetector::detectWithColourSegmentation(cv::Mat frame)
@@ -20,9 +23,11 @@ void PoolTableDetector::detectWithColourSegmentation(cv::Mat frame)
 	int iLowH = 38;
 	int iHighH = 130;
 
+	//Saturation Range from 0-255
 	int iLowS = 40;
 	int iHighS = 200;
 
+	//Intensity (Value) Range from 0-255
 	int iLowV = 30;
 	int iHighV = 200;
 
@@ -66,6 +71,42 @@ void PoolTableDetector::detectWithLineDetection(cv::Mat frame)
 	probHoughLines(frame, houghMap, 80, 20, 11);
 
 	imshow("Hough View", houghMap);
+}
+
+void PoolTableDetector::detectPocketsWithColourSegmentation(cv::Mat frame)
+{
+	//Note: Ranges have to be adjusted to 0-179 from normal Hue range
+	int iLowH = 160;
+	int iHighH = 170;
+
+	//Note: Ranges have to be adjusted to 0-255 from normal Saturation and Intensity (Value) ranges
+	int iLowS = 0;
+	int iHighS = 255;
+	int iLowV = 0;
+	int iHighV = 255;
+
+	cv::Mat imgHSV;
+
+	cvtColor(frame, imgHSV, cv::COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
+
+	cv::Mat imgThresholded;
+
+	inRange(imgHSV, cv::Scalar(iLowH, iLowS, iLowV), cv::Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image
+
+	//morphological opening (remove small objects from the foreground)
+	erode(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
+	dilate(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
+
+	//morphological closing (fill small holes in the foreground)
+	dilate(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(25, 25)));
+	erode(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(25, 25)));
+
+	//Used to make the mask bigger (For our specific situation we want to make sure the mask
+	//includes the whole pool table, having it a bit bigger thant he pool table is not an issue.
+	//dilate(imgThresholded, imgThresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(30, 30)));
+
+	imshow("HSI Pocket Segmentation View", imgThresholded); //show the thresholded image
+	//imshow("Original", frame); //show the original image
 }
 
 

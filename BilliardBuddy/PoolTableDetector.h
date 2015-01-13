@@ -11,6 +11,7 @@ class PoolTableDetector :
 private:
 	void detectWithColourSegmentation(cv::Mat frame);
 	void detectWithLineDetection(cv::Mat frame);
+	void detectPocketsWithColourSegmentation(cv::Mat frame);
 
 	void regHoughLines(cv::Mat& view, cv::Mat& houghMap, int threshold);
 	void probHoughLines(cv::Mat& view, cv::Mat& houghMap, int threshold, int minLineLength, int maxLineGap);
