@@ -26,32 +26,81 @@ void PoolTableDetector::detectTableWithColourSegmentation(cv::Mat& frame)
 	int iLowV = 30;
 	int iHighV = 200;
 
-	cv::Mat imgHSV;
+	//Specify opening/closing size
+	int open_size = 16;
+	int close_size = 16;
 
-	cvtColor(frame, imgHSV, cv::COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
-
-	cv::Mat tableMask;
-
-	inRange(imgHSV, cv::Scalar(iLowH, iLowS, iLowV), cv::Scalar(iHighH, iHighS, iHighV), tableMask); //Threshold the image
-
-	//morphological opening (remove small objects from the foreground)
-	// needs more filtering
-	erode(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16, 16)));
-	dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16, 16)));
-
-	//morphological closing (fill small holes in the foreground)
-	dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16, 16)));
-	erode(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16, 16)));
-
-	// Dilate to include balloon markers.
-	dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(50, 50)));
-
+	//Create binary colour segmented mask
+	cv::Mat tableMask = PoolTableDetector::colourSegmentation(frame, open_size, close_size,
+		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
 
 	cv::Mat maskedFrame;
 	frame.copyTo(maskedFrame, tableMask);
 	imshow("Masked Pool Table", maskedFrame);
 
 	detectTableEdge(frame, tableMask);
+}
+
+void PoolTableDetector::detectPocketsWithColourSegmentation(cv::Mat& frame)
+{
+	//Specify opening/closing size
+	int open_size = 5;
+	int close_size = 5;
+
+	//Can be used to control with trackbars the values
+	//Orange
+	int iLowH = 3; //GIMP converted from 5
+	int iHighH = 11; //GIMP converted from 15
+	int iLowS = 161;
+	int iHighS = 209;
+	int iLowV = 124;
+	int iHighV = 167;
+
+	//Create binary colour segmented mask
+	cv::Mat orangePocketMask = PoolTableDetector::colourSegmentation(frame, open_size, close_size,
+		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
+
+	//Green
+	iLowH = 36; //GIMP converted from 52
+	iHighH = 41; //GIMP converted from 58
+	iLowS = 150;
+	iHighS = 240;
+	iLowV = 103;
+	iHighV = 177;
+
+	//Create binary colour segmented mask
+	cv::Mat greenPocketMask = PoolTableDetector::colourSegmentation(frame, open_size, close_size,
+		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
+
+	//Purple
+	iLowH = 123; //GIMP converted from 175
+	iHighH = 133; //GIMP converted from 190
+	iLowS = 123;
+	iHighS = 184;
+	iLowV = 25;
+	iHighV = 60;
+
+	//Create binary colour segmented mask
+	cv::Mat purplePocketMask = PoolTableDetector::colourSegmentation(frame, open_size, close_size,
+		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
+	
+	//Pink
+	iLowH = 174;//GIMP converted from 248
+	iHighH = 178;//GIMP converted from 254
+	iLowS = 155;
+	iHighS = 215;
+	iLowV = 125;
+	iHighV = 201;
+
+	//Create binary colour segmented mask
+	cv::Mat pinkPocketMask = PoolTableDetector::colourSegmentation(frame, open_size, close_size, 
+												iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
+	
+	//Add all masks together
+	cv::Mat allPocketMask = pinkPocketMask + purplePocketMask + greenPocketMask + orangePocketMask;
+	cv::Mat maskedFrame;
+	frame.copyTo(maskedFrame, allPocketMask);
+	imshow("All Pockets", maskedFrame);
 }
 
 void PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& tableMask)
@@ -77,6 +126,29 @@ void PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& tableMask)
 	//	line(maskedEdgeFrame, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0, 0, 255), 1, CV_AA);
 	//}
 	//imshow("Rail Edge Hough", maskedEdgeFrame);
+
+	detectPocketsWithColourSegmentation(maskedEdgeFrame);
+}
+
+cv::Mat PoolTableDetector::colourSegmentation(cv::Mat frame, int open_size, int close_size, int iLowH, int iLowS, int iLowV,
+												int iHighH, int iHighS, int iHighV){
+	//Convert the captured frame from BGR to HSV
+	cv::Mat imgHSV;
+	cvtColor(frame, imgHSV, cv::COLOR_BGR2HSV); 
+
+	//Create mask
+	cv::Mat maskedFrame;
+	inRange(imgHSV, cv::Scalar(iLowH, iLowS, iLowV), cv::Scalar(iHighH, iHighS, iHighV), maskedFrame); //Threshold the image
+
+	//morphological opening (remove small objects from the foreground)
+	erode(maskedFrame, maskedFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(open_size, open_size)));
+	dilate(maskedFrame, maskedFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(open_size, open_size)));
+
+	//morphological closing (fill small holes in the foreground)
+	dilate(maskedFrame, maskedFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(close_size, close_size)));
+	erode(maskedFrame, maskedFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(close_size, close_size)));
+
+	return maskedFrame;
 }
 
 void PoolTableDetector::probHoughLines(cv::Mat& frame, cv::Mat& houghMap, int threshold, int minLineLength, int maxLineGap) {
