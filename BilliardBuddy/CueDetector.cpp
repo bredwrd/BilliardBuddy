@@ -42,8 +42,6 @@ void CueDetector::probHoughLinesCueSegments(cv::Mat& frame) {
 
 	mergeCueSegments(houghMap);
 
-	imshow("Cue Segments", houghMap);
-
 	frame = houghMap.clone();
 }
 
@@ -73,8 +71,6 @@ void CueDetector::mergeCueSegments(cv::Mat& frame)
 			cueLine[1] = cv::Vec2i(lines[i][2] + CROP_X, lines[i][3] + CROP_Y);
 		}
 	}
-
-	imshow("Cue Lines", houghMap);
 }
 
 void CueDetector::hsiSegment(cv::Mat& frame)
@@ -104,8 +100,6 @@ void CueDetector::hsiSegment(cv::Mat& frame)
 	cv::Mat maskedFrame;
 	frame.copyTo(maskedFrame, hsvMask);
 	frame = maskedFrame.clone();
-
-	imshow("HSI Cue", frame);
 }
 
 void CueDetector::GaussianBlur(cv::Mat& frame)
@@ -129,7 +123,7 @@ void CueDetector::skeleton(cv::Mat& frame)
 	cv::Mat temp;
 	cv::Mat eroded;
 
-	cv::Mat element = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3));
+	cv::Mat element = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
 
 	bool done;
 	do

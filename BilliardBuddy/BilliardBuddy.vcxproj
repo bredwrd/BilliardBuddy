@@ -136,6 +136,7 @@
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="CueDetector.cpp" />
     <ClCompile Include="CueAugmentor.cpp" />
+    <ClCompile Include="CueBallDetector.cpp" />
     <ClCompile Include="TextAugmentor.cpp" />
     <ClCompile Include="VisualAugmentor.cpp" />
   </ItemGroup>
@@ -146,6 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraInterface.h" />
+    <ClInclude Include="CueBallDetector.h" />
     <ClInclude Include="FeatureDetector.h" />
     <ClInclude Include="BilliardBuddy.h" />
     <ClInclude Include="CueDetector.h" />

@@ -10,6 +10,7 @@ class CueAugmentor :
 {
 private:
 
+
 public:
 	CueAugmentor();
 	~CueAugmentor();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FeatureDetector.h"
+#include "CueBallDetector.h"
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
