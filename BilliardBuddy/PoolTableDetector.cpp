@@ -49,12 +49,12 @@ void PoolTableDetector::detectPocketsWithColourSegmentation(cv::Mat& frame)
 
 	//Can be used to control with trackbars the values
 	//Orange
-	int iLowH = 3; //GIMP converted from 5
-	int iHighH = 11; //GIMP converted from 15
-	int iLowS = 161;
-	int iHighS = 209;
-	int iLowV = 124;
-	int iHighV = 167;
+	int iLowH = 1; //GIMP converted from 1
+	int iHighH = 16; //GIMP converted from 23
+	int iLowS = 150;
+	int iHighS = 249;
+	int iLowV = 92;
+	int iHighV = 210;
 
 	//Create binary colour segmented mask
 	cv::Mat orangePocketMask = PoolTableDetector::colourSegmentation(frame, open_size, close_size,
@@ -62,35 +62,35 @@ void PoolTableDetector::detectPocketsWithColourSegmentation(cv::Mat& frame)
 
 	//Green
 	iLowH = 36; //GIMP converted from 52
-	iHighH = 41; //GIMP converted from 58
-	iLowS = 150;
+	iHighH = 55; //GIMP converted from 79
+	iLowS = 108;
 	iHighS = 240;
 	iLowV = 103;
-	iHighV = 177;
+	iHighV = 218;
 
 	//Create binary colour segmented mask
 	cv::Mat greenPocketMask = PoolTableDetector::colourSegmentation(frame, open_size, close_size,
 		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
 
 	//Purple
-	iLowH = 123; //GIMP converted from 175
-	iHighH = 133; //GIMP converted from 190
-	iLowS = 123;
+	iLowH = 114; //GIMP converted from 162
+	iHighH = 135; //GIMP converted from 193
+	iLowS = 100;
 	iHighS = 184;
-	iLowV = 25;
-	iHighV = 60;
+	iLowV = 23;
+	iHighV = 82;
 
 	//Create binary colour segmented mask
 	cv::Mat purplePocketMask = PoolTableDetector::colourSegmentation(frame, open_size, close_size,
 		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
 	
 	//Pink
-	iLowH = 174;//GIMP converted from 248
+	iLowH = 165;//GIMP converted from 235
 	iHighH = 178;//GIMP converted from 254
-	iLowS = 155;
+	iLowS = 106;
 	iHighS = 215;
-	iLowV = 125;
-	iHighV = 201;
+	iLowV = 120;
+	iHighV = 255;
 
 	//Create binary colour segmented mask
 	cv::Mat pinkPocketMask = PoolTableDetector::colourSegmentation(frame, open_size, close_size, 
