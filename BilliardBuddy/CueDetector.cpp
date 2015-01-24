@@ -51,21 +51,21 @@ void CueDetector::mergeCueSegments(cv::Mat& frame)
 {
 	// combines two cue segments into a single line segment.
 	cv::vector<cv::Vec4i> lines;
-	HoughLinesP(frame, lines, 1, CV_PI / 180, 50, 25, 100);
+	HoughLinesP(frame, lines, 1, CV_PI / 180, 50, 18, 100);
 
 
 	// Calculate the lengths of all lines.
 	int maxLengthIndex = -1;
-	int maxSquaredLength = -1;
+	int maxAbsoluteLength = -1;
 	cv::Mat houghMap(frame.size(), CV_8UC3, cv::Scalar(0));
 	for (size_t i = 0; i < lines.size(); i++)
 	{
 		line(houghMap, cv::Point(lines[i][0], lines[i][1]), cv::Point(lines[i][2], lines[i][3]), cv::Scalar(255, 255, 255), 1, CV_AA);
-		int squaredLength = (lines[i][0] - lines[i][2]) + (lines[i][1] - lines[i][3]);
+		int absoluteLength = abs((lines[i][0] - lines[i][2]) + (lines[i][1] - lines[i][3]));
 
-		if (squaredLength > maxSquaredLength)
+		if (absoluteLength > maxAbsoluteLength)
 		{
-			maxSquaredLength = squaredLength;
+			maxAbsoluteLength = absoluteLength;
 			maxLengthIndex = i;
 
 			// Convert cropped coords to global coords.
@@ -80,13 +80,13 @@ void CueDetector::mergeCueSegments(cv::Mat& frame)
 void CueDetector::hsiSegment(cv::Mat& frame)
 {
 	//Can be used to control with trackbars the values
-	int minH = 22;
-	int maxH = 100;
+	int minH = 10;
+	int maxH = 40;
 
 	int minS = 1;
-	int maxS = 166;
+	int maxS = 170;
 
-	int minV = 215;
+	int minV = 175;
 	int maxV = 255;
 
 	cv::Mat hsvFrame;
