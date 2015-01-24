@@ -4,6 +4,10 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include "opencv2/features2d/features2d.hpp"
+//Not sure if these next 2 need to be included. Builds without but some say errors arise later.
+#include "opencv2/nonfree/features2d.hpp"
+#include "opencv2/nonfree/nonfree.hpp"
 
 class PoolTableDetector :
 	public virtual billbud::FeatureDetector

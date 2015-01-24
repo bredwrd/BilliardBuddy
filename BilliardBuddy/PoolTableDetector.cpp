@@ -101,6 +101,34 @@ void PoolTableDetector::detectPocketsWithColourSegmentation(cv::Mat& frame)
 	cv::Mat maskedFrame;
 	frame.copyTo(maskedFrame, allPocketMask);
 	imshow("All Pockets", maskedFrame);
+
+	// set up the parameters (check the defaults in opencv's code in blobdetector.cpp)
+	cv::SimpleBlobDetector::Params params;
+	params.minDistBetweenBlobs = 50.0f;
+	params.filterByInertia = false;
+	params.filterByConvexity = false;
+	params.filterByColor = false;
+	params.filterByCircularity = false;
+	params.filterByArea = true;
+	params.minArea = 50.0f;
+	params.maxArea = 5000.0f;
+
+	// Set up the detector with parameters and detect
+	cv::SimpleBlobDetector blob_detector(params);
+	cv::vector<cv::KeyPoint> keypoints;
+	blob_detector.detect(allPocketMask, keypoints);
+
+	// extract the x y coordinates of the keypoints 
+	for (int i = 0; i<keypoints.size(); i++){
+		float X = keypoints[i].pt.x;
+		float Y = keypoints[i].pt.y;
+	}
+
+	cv::Mat keypointMask;
+	cv::drawKeypoints(allPocketMask, keypoints, keypointMask, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+	cv::Mat maskedKeypointFrame;
+	frame.copyTo(maskedFrame, allPocketMask);
+	imshow("All Pockets w/ Points", keypointMask);
 }
 
 void PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& tableMask)
