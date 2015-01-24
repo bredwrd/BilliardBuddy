@@ -10,11 +10,11 @@ PoolTableDetector::~PoolTableDetector()
 
 cv::vector<cv::Vec2i> PoolTableDetector::detect(cv::Mat frame)
 {
-	detectTableWithColourSegmentation(frame);
+	pockets = detectTableWithColourSegmentation(frame);
 	return pockets; // TODO- populate vector containing points of pockets
 }
 
-void PoolTableDetector::detectTableWithColourSegmentation(cv::Mat& frame)
+cv::vector<cv::Vec2i> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat& frame)
 {
 	//Can be used to control with trackbars the values
 	int iLowH = 40;
@@ -38,10 +38,10 @@ void PoolTableDetector::detectTableWithColourSegmentation(cv::Mat& frame)
 	frame.copyTo(maskedFrame, tableMask);
 	imshow("Masked Pool Table", maskedFrame);
 
-	detectTableEdge(frame, tableMask);
+	return detectTableEdge(frame, tableMask);
 }
 
-void PoolTableDetector::detectPocketsWithColourSegmentation(cv::Mat& frame)
+cv::vector<cv::Vec2i> PoolTableDetector::detectPocketsWithColourSegmentation(cv::Mat& frame)
 {
 	//Specify opening/closing size
 	int open_size = 5;
@@ -118,10 +118,23 @@ void PoolTableDetector::detectPocketsWithColourSegmentation(cv::Mat& frame)
 	cv::vector<cv::KeyPoint> keypoints;
 	blob_detector.detect(allPocketMask, keypoints);
 
+	// For changing the vector data type
+	int height = int (keypoints.size());
+	cv::vector<cv::Vec2i> pocketPoints(height);
+
 	// extract the x y coordinates of the keypoints 
-	for (int i = 0; i<keypoints.size(); i++){
+	for (int i = 0; i < keypoints.size(); i++){
 		float X = keypoints[i].pt.x;
 		float Y = keypoints[i].pt.y;
+		//Converts from float to int (doesn't need to worry about negatives)
+		pocketPoints[i][0] = int (X + 0.5);
+		pocketPoints[i][1] = int (Y + 0.5);
+		
+		//Used to Check Pocket Points Conversion is accurate until accuracy can be judged in physics calculations
+		/*using std::cout;
+		using std::endl;
+		cout << "keypoints " << i << " : " << keypoints[i].pt.x << " " << keypoints[i].pt.y << endl;
+		cout << "pocket points " << i << " : " << pocketPoints[i][0] << " " << pocketPoints[i][1] << endl;*/
 	}
 
 	cv::Mat keypointMask;
@@ -129,9 +142,11 @@ void PoolTableDetector::detectPocketsWithColourSegmentation(cv::Mat& frame)
 	cv::Mat maskedKeypointFrame;
 	frame.copyTo(maskedFrame, allPocketMask);
 	imshow("All Pockets w/ Points", keypointMask);
+
+	return pocketPoints;
 }
 
-void PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& tableMask)
+cv::vector<cv::Vec2i> PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& tableMask)
 {
 	// Thin the edge of the pool table colour.
 	Canny(tableMask, tableMask, 100, 180, 3, true);
@@ -155,7 +170,7 @@ void PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& tableMask)
 	//}
 	//imshow("Rail Edge Hough", maskedEdgeFrame);
 
-	detectPocketsWithColourSegmentation(maskedEdgeFrame);
+	return detectPocketsWithColourSegmentation(maskedEdgeFrame);
 }
 
 cv::Mat PoolTableDetector::colourSegmentation(cv::Mat frame, int open_size, int close_size, int iLowH, int iLowS, int iLowV,
