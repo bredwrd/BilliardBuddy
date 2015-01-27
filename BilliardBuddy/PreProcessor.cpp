@@ -19,7 +19,7 @@ void PreProcessor::transposeImage(Mat& frame)
 {
 	// rotate image 90 deg. counter-clockwise to compensate for portrait camera orientation
 	transpose(frame, frame);
-	flip(frame, frame, 0);
+	flip(frame, frame, 1);
 }
 
 void PreProcessor::oclUndistort(Mat& frame)

@@ -13,7 +13,6 @@ private:
 public:
 	CueAugmentor();
 	~CueAugmentor();
-	void CueAugmentor::augment(cv::Mat& frame, cv::vector<cv::Vec2i> points);
-
+	void CueAugmentor::augment(cv::Mat& frame, cv::vector<cv::Vec2i> points); // points must have length of 2
 };
 
