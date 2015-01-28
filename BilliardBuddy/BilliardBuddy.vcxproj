@@ -131,6 +131,7 @@
     <ClCompile Include="BilliardBuddy.cpp" />
     <ClCompile Include="CameraInterface.cpp" />
     <ClCompile Include="FeatureDetector.cpp" />
+    <ClCompile Include="PocketDetector.cpp" />
     <ClCompile Include="PoolTableDetector.cpp" />
     <ClCompile Include="PreProcessor.cpp" />
     <ClCompile Include="Settings.cpp" />
@@ -150,6 +151,7 @@
     <ClInclude Include="BilliardBuddy.h" />
     <ClInclude Include="CueDetector.h" />
     <ClInclude Include="CueAugmentor.h" />
+    <ClInclude Include="PocketDetector.h" />
     <ClInclude Include="PoolTableDetector.h" />
     <ClInclude Include="PreProcessor.h" />
     <ClInclude Include="Settings.h" />
