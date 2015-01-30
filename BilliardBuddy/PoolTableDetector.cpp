@@ -38,6 +38,10 @@ cv::vector<cv::Vec2i> PoolTableDetector::detectTableWithColourSegmentation(cv::M
 	frame.copyTo(maskedFrame, tableMask);
 	imshow("Masked Pool Table", maskedFrame);
 
+	// Run BallDetector on masked pool table
+	BallDetector ballDetector = BallDetector();
+	ballDetector.detect(maskedFrame);
+
 	return detectTableEdge(frame, tableMask);
 }
 

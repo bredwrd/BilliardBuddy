@@ -2,6 +2,7 @@
 
 #include "FeatureDetector.h"
 #include "PocketDetector.h"
+#include "BallDetector.h"
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>

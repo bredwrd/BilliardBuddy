@@ -48,6 +48,9 @@
     <ClCompile Include="PocketDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BallDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="PhysicsModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -89,6 +92,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PocketDetector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BallDetector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PhysicsModel.h">
