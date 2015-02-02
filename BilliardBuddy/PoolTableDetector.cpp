@@ -27,8 +27,8 @@ cv::vector<cv::Vec2i> PoolTableDetector::detectTableWithColourSegmentation(cv::M
 	int iHighV = 200;
 
 	//Specify opening/closing size
-	int open_size = 16;
-	int close_size = 16;
+	int open_size = 32;
+	int close_size = 32;
 
 	//Create binary colour segmented mask
 	cv::Mat tableMask = PoolTableDetector::hsiSegment(frame, open_size, close_size,
