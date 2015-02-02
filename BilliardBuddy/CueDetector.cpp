@@ -53,26 +53,24 @@ void CueDetector::mergeCueSegments(cv::Mat& frame)
 	cv::vector<cv::Vec4i> lines;
 	HoughLinesP(frame, lines, 1, CV_PI / 180, 50, 18, 100);
 
-
-	// Calculate the lengths of all lines.
-	int maxLengthIndex = -1;
-	int maxAbsoluteLength = -1;
+	// Calculate the mean cue endpoints.
 	cv::Mat houghMap(frame.size(), CV_8UC3, cv::Scalar(0));
+	cv::Vec4i cueCandidatesSum;
+	cueCandidatesSum = cv::Vec4i(0, 0, 0, 0);
 	for (size_t i = 0; i < lines.size(); i++)
 	{
 		line(houghMap, cv::Point(lines[i][0], lines[i][1]), cv::Point(lines[i][2], lines[i][3]), cv::Scalar(255, 255, 255), 1, CV_AA);
-		int absoluteLength = abs((lines[i][0] - lines[i][2]) + (lines[i][1] - lines[i][3]));
-
-		if (absoluteLength > maxAbsoluteLength)
-		{
-			maxAbsoluteLength = absoluteLength;
-			maxLengthIndex = i;
-
-			// Convert cropped coords to global coords.
-			cueLine[0] = cv::Vec2i(lines[i][0] + CROP_X, lines[i][1] + CROP_Y);
-			cueLine[1] = cv::Vec2i(lines[i][2] + CROP_X, lines[i][3] + CROP_Y);
-		}
+		cueCandidatesSum += cv::Vec4i(lines[i][0], lines[i][1], lines[i][2], lines[i][3]);
 	}
+	float cueCandidatesMean[4];
+	for (int i = 0; i < 4; i++)
+	{
+		cueCandidatesMean[i] = cueCandidatesSum[i] / lines.size();
+	}
+
+	// Convert cropped coords to global coords.
+	cueLine[0] = cv::Vec2i(cueCandidatesMean[0] + CROP_X, cueCandidatesMean[1] + CROP_Y);
+	cueLine[1] = cv::Vec2i(cueCandidatesMean[2] + CROP_X, cueCandidatesMean[3] + CROP_Y);
 
 	imshow("Cue Lines", houghMap);
 }

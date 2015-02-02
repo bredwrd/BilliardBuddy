@@ -23,6 +23,7 @@ private:
 	static const int CROP_WIDTH = 420;
 	static const int CROP_HEIGHT = 280;
 	cv::vector<cv::Vec2i> cueLine;
+	cv::vector<cv::Vec2i> cueLineHistory; // Tracks last x (e.g. 5) cueLinePoints and averages them.
 
 public:
 	CueDetector();
