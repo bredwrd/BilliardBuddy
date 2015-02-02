@@ -45,6 +45,9 @@ void BilliardBuddy::process(Settings& settings) {
 	PoolTableDetector poolTableDetector = PoolTableDetector();
 	CueDetector cueDetector = CueDetector();
 
+	//Initialize Physics Model Calculator
+	PhysicsModel physicsModel = PhysicsModel();
+
 	// Initialize Visual Augmentor(s)
 	TextAugmentor textAugmentor = TextAugmentor();
 	CueAugmentor cueAugmentor = CueAugmentor();
@@ -52,7 +55,7 @@ void BilliardBuddy::process(Settings& settings) {
 	// Processing Loop
 	bool result;
 	do {
-		result = processFrame(preprocess, cameraInterface, preProcessor, poolTableDetector, cueDetector, textAugmentor, cueAugmentor);
+		result = processFrame(preprocess, cameraInterface, preProcessor, poolTableDetector, cueDetector, physicsModel, textAugmentor, cueAugmentor);
 		result = pollKeyboard(preprocess);
 	} while (result == true);
 }
@@ -70,7 +73,7 @@ bool BilliardBuddy::pollKeyboard(bool& preprocess)
 	return true;
 }
 
-bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, CueDetector& cueDetector, TextAugmentor& textAugmentor, CueAugmentor& cueAugmentor) {
+bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, CueDetector& cueDetector, PhysicsModel& physicsModel, TextAugmentor& textAugmentor, CueAugmentor& cueAugmentor) {
 	// Fetch feed from camera interface.
 	Mat leftFrame, rightFrame;
 	cameraInterface.getFrames(leftFrame, rightFrame);
@@ -83,8 +86,11 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	}
 
 	// Detect features.
-	poolTableDetector.detect(rightFrame);
+	cv::vector<cv::Vec2i> pocketPoints = poolTableDetector.detect(rightFrame);
 	
+	// Calculate Physics Model
+	physicsModel.calculate(rightFrame, pocketPoints);
+
 	// Visually augment.
 	textAugmentor.augment(rightFrame);
 	cueAugmentor.augment(rightFrame, cueDetector.detect(rightFrame));
