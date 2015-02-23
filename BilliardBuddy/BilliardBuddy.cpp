@@ -86,7 +86,7 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	}
 
 	// Detect features.
-	cv::vector<cv::Vec2i> pocketPoints = poolTableDetector.detect(rightFrame);
+	cv::vector<pocket> pocketPoints = poolTableDetector.detectTable(rightFrame);
 	
 	// Calculate Physics Model
 	physicsModel.calculate(rightFrame, pocketPoints);

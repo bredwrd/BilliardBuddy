@@ -96,7 +96,7 @@ void CueDetector::hsiSegment(cv::Mat& frame)
 	inRange(hsvFrame, cv::Scalar(minH, minS, minV), cv::Scalar(maxH, maxS, maxV), hsvMask); //Threshold the image
 
 	//Used to make the mask bigger (For our specific situation we want to make sure the mask
-	//includes the whole pool table, having it a bit bigger thant he pool table is not an issue.
+	//includes the whole pool table, having it a bit bigger than the pool table is not an issue.
 	dilate(hsvMask, hsvMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(4, 4)));
 
 	cv::Mat maskedFrame;

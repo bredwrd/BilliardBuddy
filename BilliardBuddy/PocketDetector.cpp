@@ -10,34 +10,64 @@ PocketDetector::~PocketDetector()
 
 cv::vector<cv::Vec2i> PocketDetector::detect(cv::Mat frame)
 {
+	cv::vector<cv::Vec2i> pockets;
+	return pockets; // TODO- populate vector containing points of pockets
+}
+
+cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame)
+{
 	//Specify opening/closing size
 	int open_size = 5;
 	int close_size = 5;
 
-	//Can be used to control with trackbars the values
+	// set up the parameters (check the defaults in opencv's code in blobdetector.cpp)
+	cv::SimpleBlobDetector::Params params;
+	params.minDistBetweenBlobs = 50.0f;
+	params.filterByInertia = false;
+	params.filterByConvexity = false;
+	params.filterByColor = false;
+	params.filterByCircularity = false;
+	params.filterByArea = true;
+	params.minArea = 50.0f;
+	params.maxArea = 5000.0f;
+
 	//Orange
-	int iLowH = 1; //GIMP converted from 1
-	int iHighH = 16; //GIMP converted from 23
-	int iLowS = 150;
+	int iLowH = 4; //GIMP converted from 1
+	int iHighH = 16; //GIMP converted from 24
+	int iLowS = 100;
 	int iHighS = 249;
 	int iLowV = 92;
-	int iHighV = 210;
+	int iHighV = 255;
 
 	//Create binary colour segmented mask
 	cv::Mat orangePocketMask = PocketDetector::hsiSegment(frame, open_size, close_size,
 		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
 
+	// Set up the detector with parameters and detect
+	cv::SimpleBlobDetector orangeBlobDetector(params);
+	cv::vector<cv::KeyPoint> orangeKeyPoints;
+	orangeBlobDetector.detect(orangePocketMask, orangeKeyPoints);
+
+	/*cv::Mat orangeMaskedFrame;
+	frame.copyTo(orangeMaskedFrame, orangePocketMask);
+	imshow("orange Pockets", orangeMaskedFrame);*/
+
 	//Green
-	iLowH = 36; //GIMP converted from 52
+	iLowH = 29; //GIMP converted from 41
 	iHighH = 55; //GIMP converted from 79
-	iLowS = 108;
+	iLowS = 50;
 	iHighS = 240;
 	iLowV = 103;
-	iHighV = 218;
+	iHighV = 255;
 
 	//Create binary colour segmented mask
 	cv::Mat greenPocketMask = PocketDetector::hsiSegment(frame, open_size, close_size,
 		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
+
+	// Set up the detector with parameters and detect
+	cv::SimpleBlobDetector greenBlobDetector(params);
+	cv::vector<cv::KeyPoint> greenKeyPoints;
+	greenBlobDetector.detect(greenPocketMask, greenKeyPoints);
 
 	//Purple
 	iLowH = 114; //GIMP converted from 162
@@ -51,10 +81,15 @@ cv::vector<cv::Vec2i> PocketDetector::detect(cv::Mat frame)
 	cv::Mat purplePocketMask = PocketDetector::hsiSegment(frame, open_size, close_size,
 		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
 
+	// Set up the detector with parameters and detect
+	cv::SimpleBlobDetector purpleBlobDetector(params);
+	cv::vector<cv::KeyPoint> purpleKeyPoints;
+	purpleBlobDetector.detect(purplePocketMask, purpleKeyPoints);
+
 	//Pink
 	iLowH = 165;//GIMP converted from 235
 	iHighH = 178;//GIMP converted from 254
-	iLowS = 106;
+	iLowS = 50;
 	iHighS = 215;
 	iLowV = 120;
 	iHighV = 255;
@@ -63,22 +98,20 @@ cv::vector<cv::Vec2i> PocketDetector::detect(cv::Mat frame)
 	cv::Mat pinkPocketMask = PocketDetector::hsiSegment(frame, open_size, close_size,
 		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
 
-	//Add all masks together
-	cv::Mat allPocketMask = pinkPocketMask + purplePocketMask + greenPocketMask + orangePocketMask;
+	// Set up the detector with parameters and detect
+	cv::SimpleBlobDetector pinkBlobDetector(params);
+	cv::vector<cv::KeyPoint> pinkKeyPoints;
+	pinkBlobDetector.detect(pinkPocketMask, pinkKeyPoints);
+
+	/*cv::Mat pinkMaskedFrame;
+	frame.copyTo(pinkMaskedFrame, pinkPocketMask);
+	imshow("Pink Pockets", pinkMaskedFrame);*/
+	
+	/*//Add all masks together
+	cv::Mat allPocketMask = pinkPocketMask + greenPocketMask + orangePocketMask;
 	cv::Mat maskedFrame;
 	frame.copyTo(maskedFrame, allPocketMask);
 	imshow("All Pockets", maskedFrame);
-
-	// set up the parameters (check the defaults in opencv's code in blobdetector.cpp)
-	cv::SimpleBlobDetector::Params params;
-	params.minDistBetweenBlobs = 50.0f;
-	params.filterByInertia = false;
-	params.filterByConvexity = false;
-	params.filterByColor = false;
-	params.filterByCircularity = false;
-	params.filterByArea = true;
-	params.minArea = 50.0f;
-	params.maxArea = 5000.0f;
 
 	// Set up the detector with parameters and detect
 	cv::SimpleBlobDetector blob_detector(params);
@@ -96,19 +129,18 @@ cv::vector<cv::Vec2i> PocketDetector::detect(cv::Mat frame)
 		//Converts from float to int (doesn't need to worry about negatives)
 		pocketPoints[i][0] = int(X + 0.5);
 		pocketPoints[i][1] = int(Y + 0.5);
-
-		//Used to Check Pocket Points Conversion is accurate until accuracy can be judged in physics calculations
-		/*using std::cout;
-		using std::endl;
-		cout << "keypoints " << i << " : " << keypoints[i].pt.x << " " << keypoints[i].pt.y << endl;
-		cout << "pocket points " << i << " : " << pocketPoints[i][0] << " " << pocketPoints[i][1] << endl;*/
 	}
 
 	cv::Mat keypointMask;
 	cv::drawKeypoints(allPocketMask, keypoints, keypointMask, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 	cv::Mat maskedKeypointFrame;
 	frame.copyTo(maskedFrame, allPocketMask);
-	imshow("All Pockets w/ Points", keypointMask);
+	imshow("All Pockets w/ Points", keypointMask);*/
+
+	//Pocket points are filled with inference
+	PointLocator pointLocator = PointLocator();
+	cv::vector<pocket> pocketPoints;
+	pocketPoints = pointLocator.infer(orangeKeyPoints, greenKeyPoints, purpleKeyPoints, pinkKeyPoints);
 
 	return pocketPoints;
 }

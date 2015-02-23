@@ -26,6 +26,7 @@
 #include "CueAugmentor.h"
 #include "TextAugmentor.h"
 #include "PhysicsModel.h"
+#include "Pocket.h"
 
 class BilliardBuddy
 {

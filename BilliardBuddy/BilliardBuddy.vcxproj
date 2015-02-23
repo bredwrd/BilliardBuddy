@@ -133,7 +133,9 @@
     <ClCompile Include="CameraInterface.cpp" />
     <ClCompile Include="FeatureDetector.cpp" />
     <ClCompile Include="PhysicsModel.cpp" />
+    <ClCompile Include="Pocket.cpp" />
     <ClCompile Include="PocketDetector.cpp" />
+    <ClCompile Include="PointLocator.cpp" />
     <ClCompile Include="PoolTableDetector.cpp" />
     <ClCompile Include="PreProcessor.cpp" />
     <ClCompile Include="Settings.cpp" />
@@ -155,7 +157,9 @@
     <ClInclude Include="CueDetector.h" />
     <ClInclude Include="CueAugmentor.h" />
     <ClInclude Include="PhysicsModel.h" />
+    <ClInclude Include="Pocket.h" />
     <ClInclude Include="PocketDetector.h" />
+    <ClInclude Include="PointLocator.h" />
     <ClInclude Include="PoolTableDetector.h" />
     <ClInclude Include="PreProcessor.h" />
     <ClInclude Include="Settings.h" />

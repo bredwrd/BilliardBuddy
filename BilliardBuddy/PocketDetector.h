@@ -2,6 +2,8 @@
 
 #include "FeatureDetector.h"
 #include "PoolTableDetector.h"
+#include "PointLocator.h"
+#include "Pocket.h"
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -17,6 +19,7 @@ private:
 public:
 	PocketDetector();
 	cv::vector<cv::Vec2i> detect(cv::Mat frame);
+	cv::vector<pocket> detectPockets(cv::Mat frame);
 	~PocketDetector();
 };
 

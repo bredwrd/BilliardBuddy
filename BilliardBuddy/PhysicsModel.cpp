@@ -8,68 +8,31 @@ PhysicsModel::~PhysicsModel()
 {
 }
 
-cv::vector<cv::Vec2i> PhysicsModel::calculate(cv::Mat frame, cv::vector<cv::Vec2i> pockets)
+cv::vector<cv::Vec2i> PhysicsModel::calculate(cv::Mat frame, cv::vector<pocket> pockets)
 {
-	//Initialize rotated matrix (image) and its size
-	cv::Size rSize;
-	rSize.height = int(yBot);
-	rSize.width = int(xRight);
-	cv::Mat rotated;
-
-	//Initialize the coordinates of the corners after the perspective transform
-	//Order is Top Left, Top Right, Bot Left, Bot Right
-	cv::Point2f topLeft(xLeft, yTop);
-	cv::Point2f topRight(xRight, yTop);
-	cv::Point2f botLeft(xLeft, yBot);
-	cv::Point2f botRight(xRight, yBot);
-
-	//Reduce number of pockets to 4
-	//Attempt to get 4 largest points on table
-	if (pockets.size() > 4){
-		pockets = reducePoints(frame, pockets);
-	}
-
-	//Infer an extra point if there are 3 pocket points in vector
-	if (pockets.size() == 3){
-		//Warp affine doesn't get the correct pocket. Probably going to have to infer 4th point.
-		//pockets = inferPoint(frame, pockets);
-
-		cv::Point2f sourcePoints[3];
-		cv::Point2f destPoints[3];
-
-		for (int i = 0; i < pockets.size(); i++){
-			sourcePoints[i] = cv::Point2f(float(pockets[i][0]), float(pockets[i][1]));
-		}
-
-		destPoints[0] = topLeft;
-		destPoints[1] = topRight;
-		destPoints[2] = botLeft;
-		cv::Mat warp_mat = cv::getAffineTransform(sourcePoints, destPoints);
-
-		/// Apply the Affine Transform just found to the src image
-		cv::warpAffine(frame, rotated, warp_mat, rotated.size());
-
-		imshow("3 Point Warped Table", rotated);
-	}
-
 	//Need 4 pockets to do warp perspective transform
-	//For 3 points do affine transform
 	if (pockets.size() == 4){
-		cv::Point2f sourcePoints[4];
-		cv::Point2f destPoints[4];
+		cv::vector<cv::Point2f> sourcePoints(4);
+		cv::vector<cv::Point2f> destPoints(4);
 
-		for (int i = 0; i < pockets.size(); i++){
-			sourcePoints[i] = cv::Point2f(float(pockets[i][0]), float(pockets[i][1]));
+		for (int i = 0; i < 4; i++){
+			sourcePoints[i] = cv::Point2f(pockets[i].pocketPoints.pt.x, pockets[i].pocketPoints.pt.y);
+			destPoints[i] = cv::Point2f(pockets[i].xLocation, pockets[i].yLocation);
 		}
 
-		destPoints[0] = topLeft;
-		destPoints[1] = topRight;
-		destPoints[2] = botLeft;
-		destPoints[3] = botRight;
+		/*// Get mass center
+		cv::Point2f center(0, 0);
+		for (int i = 0; i < sourcePoints.size(); i++)
+			center += sourcePoints[i];
+
+		center *= (1. / sourcePoints.size());
+		sortCorners(sourcePoints, center);*/
 
 		//Gets the transformation matrix
 		cv::Mat warpMatrix = cv::getPerspectiveTransform(sourcePoints, destPoints);
 
+		cv::Mat rotated;
+		cv::Size rSize = { 360, 360 };
 		//Performs the warp perspective to obtain the 2D model
 		cv::warpPerspective(frame, rotated, warpMatrix, rSize);
 
@@ -80,16 +43,41 @@ cv::vector<cv::Vec2i> PhysicsModel::calculate(cv::Mat frame, cv::vector<cv::Vec2
 	return ballPoints;
 }
 
-//TODO
-cv::vector<cv::Vec2i> PhysicsModel::inferPoint(cv::Mat frame, cv::vector<cv::Vec2i> pockets)
-{
-
-
-	return pockets;
-}
-
-//TODO
+/*//TODO
 cv::vector<cv::Vec2i> PhysicsModel::reducePoints(cv::Mat frame, cv::vector<cv::Vec2i> pockets)
 {
-	return pockets;
+	cv::vector<cv::Vec2i> fourPockets(4);
+	fourPockets[0][0] = pockets[0][0];
+	fourPockets[0][1] = pockets[0][1];
+	fourPockets[1][0] = pockets[1][0];
+	fourPockets[1][1] = pockets[1][1];
+	fourPockets[2][0] = pockets[2][0];
+	fourPockets[2][1] = pockets[2][1];
+	fourPockets[3][0] = pockets[3][0];
+	fourPockets[3][1] = pockets[3][1];
+	return fourPockets;
 }
+
+void PhysicsModel::sortCorners(cv::vector<cv::Point2f>& corners, cv::Point2f center)
+{
+	cv::vector<cv::Point2f> top, bot;
+
+	for (int i = 0; i < corners.size(); i++)
+	{
+		if (corners[i].y < center.y)
+			top.push_back(corners[i]);
+		else
+			bot.push_back(corners[i]);
+	}
+
+	cv::Point2f tl = top[0].x > top[1].x ? top[1] : top[0];
+	cv::Point2f tr = top[0].x > top[1].x ? top[0] : top[1];
+	cv::Point2f bl = bot[0].x > bot[1].x ? bot[1] : bot[0];
+	cv::Point2f br = bot[0].x > bot[1].x ? bot[0] : bot[1];
+
+	corners.clear();
+	corners.push_back(tl);
+	corners.push_back(tr);
+	corners.push_back(bl);
+	corners.push_back(br);
+}*/

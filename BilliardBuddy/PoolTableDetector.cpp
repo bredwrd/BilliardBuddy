@@ -10,11 +10,17 @@ PoolTableDetector::~PoolTableDetector()
 
 cv::vector<cv::Vec2i> PoolTableDetector::detect(cv::Mat frame)
 {
+	cv::vector<cv::Vec2i> pockets;
+	return pockets; // TODO- populate vector containing points of pockets
+}
+
+cv::vector<pocket> PoolTableDetector::detectTable(cv::Mat frame)
+{
 	pockets = detectTableWithColourSegmentation(frame);
 	return pockets; // TODO- populate vector containing points of pockets
 }
 
-cv::vector<cv::Vec2i> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat& frame)
+cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat& frame)
 {
 	//Can be used to control with trackbars the values
 	int iLowH = 40; //Try GIMP converting from 110 if table needs to be tightened up
@@ -45,10 +51,22 @@ cv::vector<cv::Vec2i> PoolTableDetector::detectTableWithColourSegmentation(cv::M
 	return detectTableEdge(frame, tableMask);
 }
 
-cv::vector<cv::Vec2i> PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& tableMask)
+cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& tableMask)
 {
 	// Thin the edge of the pool table colour.
 	Canny(tableMask, tableMask, 100, 180, 3, true);
+
+	cv::Mat houghMap;
+	tableMask.copyTo(houghMap);
+
+	cv::vector<cv::Vec4i> lines;
+	HoughLinesP(houghMap, lines, 1, CV_PI / 180, 10, 10, 10);
+	for (size_t i = 0; i < lines.size(); i++)
+	{
+		cv::Vec4i l = lines[i];
+		line(houghMap, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0, 0, 255), 1, CV_AA);
+	}
+	imshow("Rail Edge Hough", houghMap);
 
 	// Expand pool edge to include some padding to contain the rail.
 	dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(50, 50)));
@@ -57,23 +75,11 @@ cv::vector<cv::Vec2i> PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat
 	frame.copyTo(maskedEdgeFrame, tableMask);
 	imshow("Rail Edge", maskedEdgeFrame);
 
-	//cv::Mat houghMap;
-	//tableMask.copyTo(houghMap);
-
-	//cv::vector<cv::Vec4i> lines;
-	//HoughLinesP(tableMask, lines, 1, CV_PI / 180, 300, 100, 20);
-	//for (size_t i = 0; i < lines.size(); i++)
-	//{
-	//	cv::Vec4i l = lines[i];
-	//	line(maskedEdgeFrame, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0, 0, 255), 1, CV_AA);
-	//}
-	//imshow("Rail Edge Hough", maskedEdgeFrame);
-
 	//Initialize Pocket Detector
 	PocketDetector pocketDetector = PocketDetector();
 
 	//Run pocket detector
-	return pocketDetector.detect(maskedEdgeFrame);
+	return pocketDetector.detectPockets(maskedEdgeFrame);
 }
 
 cv::Mat PoolTableDetector::hsiSegment(cv::Mat frame, int open_size, int close_size, int iLowH, int iLowS, int iLowV,
