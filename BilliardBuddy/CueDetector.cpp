@@ -53,7 +53,28 @@ void CueDetector::mergeCueSegments(cv::Mat& frame)
 	cv::vector<cv::Vec4i> lines;
 	HoughLinesP(frame, lines, 1, CV_PI / 180, 50, 18, 100);
 
-	// Calculate the mean cue endpoints.
+	// Convert vector 'lines' to Mat 'points'.
+	cv::Mat points(2 * lines.size(), 2, CV_32F);
+	for (int i = 0; i < 2*lines.size(); i=i+2)
+	{
+		points.at<int>(i, 0) = lines[i][0];
+		points.at<int>(i, 1) = lines[i][1];
+
+		points.at<int>(i + 1, 0) = lines[i][2];
+		points.at<int>(i + 1, 1) = lines[i][2];
+	}
+
+	if (lines.size() > 0)
+	{
+		// Calculate the mean cue endpoints.
+		int K = 2;
+		int attempts = 3;
+		cv::Mat labels;
+		cv::Mat centers(K, 1, points.type());
+		cv::TermCriteria criteria = cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0);
+		cv::kmeans(points, K, labels, criteria, attempts, cv::KMEANS_PP_CENTERS, centers);
+	}
+
 	cv::Mat houghMap(frame.size(), CV_8UC3, cv::Scalar(0));
 	cv::Vec4i cueCandidatesSum;
 	cueCandidatesSum = cv::Vec4i(0, 0, 0, 0);
