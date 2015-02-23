@@ -43,6 +43,14 @@ cv::vector<cv::Vec2i> PhysicsModel::calculate(cv::Mat frame, cv::vector<pocket> 
 	return ballPoints;
 }
 
+Distances calculateDistances(cv::vector<pocket> pockets){
+
+}
+
+cv::vector<cv::Vec2f> calculatePath(){
+
+}
+
 /*//TODO
 cv::vector<cv::Vec2i> PhysicsModel::reducePoints(cv::Mat frame, cv::vector<cv::Vec2i> pockets)
 {
