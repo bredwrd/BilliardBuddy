@@ -49,7 +49,7 @@ void CueDetector::probHoughLinesCueSegments(cv::Mat& frame) {
 
 void CueDetector::mergeCueSegments(cv::Mat& frame)
 {
-	// combines two cue segments into a single line segment.
+	// Combine multiple cue segments into a single cue candidate.
 	cv::vector<cv::Vec4i> lines;
 	HoughLinesP(frame, lines , 1, CV_PI / 180, 50, 18, 100);
 
@@ -71,47 +71,19 @@ void CueDetector::mergeCueSegments(cv::Mat& frame)
 		{
 			for (int j = 0; j <= 1; j++)
 			{
-				// Debug messages
-				std::cout << "startPoint (" << i << ", " << j << ") = " << lines[i][j] << std::endl;
 				startPoints.at<float>(i, j) = lines[i][j];
-
-				std::cout << "endPoint (" << i << ", " << j << ") = " << lines[i][j+2] << std::endl;
-				endPoints.at<float>(i, j) = lines[i][j+2];
+				endPoints.at<float>(i, j) = lines[i][j+2]; // endpoints are returned from HoughLines as the last two elements in a row.
 			}
 		}
 
 		// Vertically concatenate startPoints and endPoints (undocumented, see http://answers.opencv.org/question/1368/concatenating-matrices/)
 		cv::vconcat(startPoints, endPoints, allPoints);
 
-		// Debug messages
-		std::cout << "startPoints = " << startPoints << std::endl;
-		std::cout << "endPoints = " << endPoints << std::endl;
-		std::cout << "points = " << allPoints << std::endl;
-
 		// Calculate the mean cue endpoints using K=2-means clustering. See http://www.aishack.in/tutorials/kmeans-clustering-in-opencv/
 		int K = 2;
 		cv::Mat labels;
 		cv::Mat centers(K, 2, allPoints.type());
 		cv::kmeans(allPoints, K, labels, cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0), 50, cv::KMEANS_PP_CENTERS, centers);
-
-		// Debug messages for point classifications
-		for (int i = 0; i < 2*lines.size(); i++)
-		{
-			int clusterIdx = labels.at<int>(i);
-			std::cout << "point " << i << " = " << "class " << clusterIdx << std::endl;
-			
-		}
-
-
-		// Debug messages for class centres
-		for (int i = 0; i < 2; i++)
-		{
-			for (int j = 0; j < 2; j++)
-			{
-				int cell = centers.at<float>(i, j);
-				std::cout << "center (" << i << ", " << j << ") = " << cell << std::endl;
-			}
-		}
 
 		// Convert cropped coords to global coords.
 		cueLine[0] = cv::Vec2i(centers.at<float>(0, 0) + CROP_X, centers.at<float>(0, 1) + CROP_Y);
@@ -123,23 +95,6 @@ void CueDetector::mergeCueSegments(cv::Mat& frame)
 		cueLine[0] = cv::Vec2i(0, 0);
 		cueLine[1] = cv::Vec2i(0, 0);
 	}
-
-	// Debug video display.
-	cv::Mat houghMap(frame.size(), CV_8UC3, cv::Scalar(0));
-	cv::Vec4i cueCandidatesSum;
-	cueCandidatesSum = cv::Vec4i(0, 0, 0, 0);
-	for (size_t i = 0; i < lines.size(); i++)
-	{
-		line(houghMap, cv::Point(lines[i][0], lines[i][1]), cv::Point(lines[i][2], lines[i][3]), cv::Scalar(255, 255, 255), 1, CV_AA);
-	}
-
-	float cueCandidatesMean[4];
-	for (int i = 0; i < 4; i++)
-	{
-		cueCandidatesMean[i] = cueCandidatesSum[i] / lines.size();
-	}
-
-	imshow("Cue Lines", houghMap);
 }
 
 void CueDetector::hsiSegment(cv::Mat& frame)
