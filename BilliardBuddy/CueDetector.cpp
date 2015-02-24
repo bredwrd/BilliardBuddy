@@ -69,21 +69,31 @@ void CueDetector::mergeCueSegments(cv::Mat& frame)
 
 		// Convert vector 'lines' to Mat 'points'.
 		cv::Mat points(lines.size()*2, 2, CV_32FC1);
+		cv::Mat startPoints(lines.size(), 2, CV_32FC1);
+		cv::Mat endPoints(lines.size(), 2, CV_32FC1);
 		points = cv::Scalar(0);
 		// points(2 * lines.size(), 2, CV_32F);
-		for (int i = 0; i < points.rows; i = i++)
+		for (int i = 0; i < lines.size(); i = i++)
 		{
-			int point;
-			std::cout << "i = " << i << std::endl;
-			std::cout << "point = " << lines[i][0] << std::endl;
-			points.at<float>(i, 0) = lines[i][0];
-			std::cout << "point = " << lines[i][1] << std::endl;
-			points.at<float>(i, 1) = lines[i][1];
-			std::cout << "point = " << lines[i][2] << std::endl;
-			points.at<float>(i + 1, 0) = lines[i][2];
-			std::cout << "point = " << lines[i][3] << std::endl;
-			points.at<float>(i + 1, 1) = lines[i][3];
+			for (int j = 0; j <= 1; j++)
+			{
+				std::cout << "startPoint (" << i << ", " << j << ") = " << lines[i][j] << std::endl;
+				startPoints.at<float>(i, j) = lines[i][j];
+
+				std::cout << "endPoint (" << i << ", " << j << ") = " << lines[i][j+2] << std::endl;
+				endPoints.at<float>(i, j) = lines[i][j+2];
+			}
 		}
+
+		// Debug
+
+		std::cout << "startPoints = " << startPoints << std::endl;
+		std::cout << "endPoints = " << endPoints << std::endl;
+
+		// Vertically concatenate startPoints and endPoints (undocumented, see http://answers.opencv.org/question/1368/concatenating-matrices/)
+		cv::vconcat(startPoints, endPoints, points);
+
+		std::cout << "points = " << points << std::endl;
 
 		// Calculate the mean cue endpoints.
 		int K = 2;
@@ -103,7 +113,7 @@ void CueDetector::mergeCueSegments(cv::Mat& frame)
 			for (int j = 0; j < 2; j++)
 			{
 				int cell = centers.at<float>(i, j);
-				std::cout << "(" << i << ", " << j << ") = " << cell << std::endl;
+				std::cout << "center (" << i << ", " << j << ") = " << cell << std::endl;
 			}
 
 		}
