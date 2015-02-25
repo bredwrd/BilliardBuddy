@@ -87,13 +87,24 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 
 	// Detect features.
 	cv::vector<pocket> pocketPoints = poolTableDetector.detectTable(rightFrame);
-	
+
+	//Detect Cue
+	cv::vector<Vec2i> cue = cueDetector.detect(rightFrame);
+
+	//Detect White Ball
+	//TODO
+	cv::Vec2f whiteBall = { 0, 0 };
+
+	//Detect other balls
+	//TODO?? Brian?
+	cv::vector<Vec2f> balls = { 0, 0 };
+
 	// Calculate Physics Model
-	physicsModel.calculate(rightFrame, pocketPoints);
+	cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cue, whiteBall, balls);
 
 	// Visually augment.
 	textAugmentor.augment(rightFrame);
-	cueAugmentor.augment(rightFrame, cueDetector.detect(rightFrame));
+	cueAugmentor.augment(rightFrame, cue);
 
 	// Display feed to user.
 	imshow("Left", leftFrame);
