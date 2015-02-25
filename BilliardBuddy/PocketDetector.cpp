@@ -107,8 +107,8 @@ cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame)
 	frame.copyTo(pinkMaskedFrame, pinkPocketMask);
 	imshow("Pink Pockets", pinkMaskedFrame);*/
 	
-	/*//Add all masks together
-	cv::Mat allPocketMask = pinkPocketMask + greenPocketMask + orangePocketMask;
+	//Add all masks together
+	cv::Mat allPocketMask = pinkPocketMask + greenPocketMask + orangePocketMask + purplePocketMask;
 	cv::Mat maskedFrame;
 	frame.copyTo(maskedFrame, allPocketMask);
 	imshow("All Pockets", maskedFrame);
@@ -118,7 +118,7 @@ cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame)
 	cv::vector<cv::KeyPoint> keypoints;
 	blob_detector.detect(allPocketMask, keypoints);
 
-	// For changing the vector data type
+	/*// For changing the vector data type
 	int height = int(keypoints.size());
 	cv::vector<cv::Vec2i> pocketPoints(height);
 
@@ -129,13 +129,13 @@ cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame)
 		//Converts from float to int (doesn't need to worry about negatives)
 		pocketPoints[i][0] = int(X + 0.5);
 		pocketPoints[i][1] = int(Y + 0.5);
-	}
+	}*/
 
 	cv::Mat keypointMask;
 	cv::drawKeypoints(allPocketMask, keypoints, keypointMask, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 	cv::Mat maskedKeypointFrame;
 	frame.copyTo(maskedFrame, allPocketMask);
-	imshow("All Pockets w/ Points", keypointMask);*/
+	imshow("All Pockets w/ Points", keypointMask);
 
 	//Pocket points are filled with inference
 	PointLocator pointLocator = PointLocator();
