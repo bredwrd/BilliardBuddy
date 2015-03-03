@@ -49,51 +49,52 @@ void CueDetector::probHoughLinesCueSegments(cv::Mat& frame) {
 
 void CueDetector::mergeCueSegments(cv::Mat& frame)
 {
-	// combines two cue segments into a single line segment.
+	// Combine multiple cue segments into a single cue candidate.
 	cv::vector<cv::Vec4i> lines;
-	HoughLinesP(frame, lines, 1, CV_PI / 180, 50, 18, 100);
-
-	// Convert vector 'lines' to Mat 'points'.
-	cv::Mat points(2 * lines.size(), 2, CV_32F);
-	for (int i = 0; i < 2*lines.size(); i=i+2)
-	{
-		points.at<int>(i, 0) = lines[i][0];
-		points.at<int>(i, 1) = lines[i][1];
-
-		points.at<int>(i + 1, 0) = lines[i][2];
-		points.at<int>(i + 1, 1) = lines[i][2];
-	}
+	HoughLinesP(frame, lines , 1, CV_PI / 180, 50, 18, 100);
 
 	if (lines.size() > 0)
 	{
-		// Calculate the mean cue endpoints.
+		// Convert vector 'lines' to Mat 'points'.
+
+		// Declare startPoints and endPoints to hold respective points of detected HoughLines.
+		cv::Mat startPoints(lines.size(), 2, CV_32FC1);
+		cv::Mat endPoints(lines.size(), 2, CV_32FC1);
+
+		// Declare allPoints to be the vertical concatenation of startPoints and endPoints.
+		// Twice the length of lines because HoughLines contain two points.
+		cv::Mat allPoints(lines.size()*2, 2, CV_32FC1);
+		allPoints = cv::Scalar(0);
+
+		// Convert n-length vector of 4-integer length vector of line boundary points to nx2 Mats.
+		for (int i = 0; i < lines.size(); i = i++)
+		{
+			for (int j = 0; j <= 1; j++)
+			{
+				startPoints.at<float>(i, j) = lines[i][j];
+				endPoints.at<float>(i, j) = lines[i][j+2]; // endpoints are returned from HoughLines as the last two elements in a row.
+			}
+		}
+
+		// Vertically concatenate startPoints and endPoints (undocumented, see http://answers.opencv.org/question/1368/concatenating-matrices/)
+		cv::vconcat(startPoints, endPoints, allPoints);
+
+		// Calculate the mean cue endpoints using K=2-means clustering. See http://www.aishack.in/tutorials/kmeans-clustering-in-opencv/
 		int K = 2;
-		int attempts = 3;
 		cv::Mat labels;
-		cv::Mat centers(K, 1, points.type());
-		cv::TermCriteria criteria = cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0);
-		cv::kmeans(points, K, labels, criteria, attempts, cv::KMEANS_PP_CENTERS, centers);
-	}
+		cv::Mat centers(K, 2, allPoints.type());
+		cv::kmeans(allPoints, K, labels, cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0), 50, cv::KMEANS_PP_CENTERS, centers);
 
-	cv::Mat houghMap(frame.size(), CV_8UC3, cv::Scalar(0));
-	cv::Vec4i cueCandidatesSum;
-	cueCandidatesSum = cv::Vec4i(0, 0, 0, 0);
-	for (size_t i = 0; i < lines.size(); i++)
+		// Convert cropped coords to global coords.
+		cueLine[0] = cv::Vec2i(centers.at<float>(0, 0) + CROP_X, centers.at<float>(0, 1) + CROP_Y);
+		cueLine[1] = cv::Vec2i(centers.at<float>(1, 0) + CROP_X, centers.at<float>(1, 1) + CROP_Y);
+	}
+	else // no lines detected
 	{
-		line(houghMap, cv::Point(lines[i][0], lines[i][1]), cv::Point(lines[i][2], lines[i][3]), cv::Scalar(255, 255, 255), 1, CV_AA);
-		cueCandidatesSum += cv::Vec4i(lines[i][0], lines[i][1], lines[i][2], lines[i][3]);
+		// Set cueLines to initial (negligable) values.
+		cueLine[0] = cv::Vec2i(0, 0);
+		cueLine[1] = cv::Vec2i(0, 0);
 	}
-	float cueCandidatesMean[4];
-	for (int i = 0; i < 4; i++)
-	{
-		cueCandidatesMean[i] = cueCandidatesSum[i] / lines.size();
-	}
-
-	// Convert cropped coords to global coords.
-	cueLine[0] = cv::Vec2i(cueCandidatesMean[0] + CROP_X, cueCandidatesMean[1] + CROP_Y);
-	cueLine[1] = cv::Vec2i(cueCandidatesMean[2] + CROP_X, cueCandidatesMean[3] + CROP_Y);
-
-	imshow("Cue Lines", houghMap);
 }
 
 void CueDetector::hsiSegment(cv::Mat& frame)
@@ -163,4 +164,63 @@ void CueDetector::skeleton(cv::Mat& frame)
 	} while (!done);
 
 	frame = skel.clone();
+}
+
+void CueDetector::kmeansDemo()
+{
+	const int MAX_CLUSTERS = 5;
+	cv::Scalar colorTab[] =
+	{
+		cv::Scalar(0, 0, 255),
+		cv::Scalar(0, 255, 0),
+		cv::Scalar(255, 100, 100),
+		cv::Scalar(255, 0, 255),
+		cv::Scalar(0, 255, 255)
+	};
+
+	cv::Mat img(500, 500, CV_8UC3);
+	cv::RNG rng(12345);
+
+	for (;;)
+	{
+		int k, clusterCount = rng.uniform(2, MAX_CLUSTERS + 1);
+		int i, sampleCount = rng.uniform(1, 1001);
+		cv::Mat points(sampleCount, 2, CV_32F), labels;
+
+		clusterCount = MIN(clusterCount, sampleCount);
+		cv::Mat centers;
+
+		/* generate random sample from multigaussian distribution */
+		for (k = 0; k < clusterCount; k++)
+		{
+			cv::Point center;
+			center.x = rng.uniform(0, img.cols);
+			center.y = rng.uniform(0, img.rows);
+			cv::Mat pointChunk = points.rowRange(k*sampleCount / clusterCount,
+				k == clusterCount - 1 ? sampleCount :
+				(k + 1)*sampleCount / clusterCount);
+			rng.fill(pointChunk, CV_RAND_NORMAL, cv::Scalar(center.x, center.y), cv::Scalar(img.cols*0.05, img.rows*0.05));
+		}
+
+		randShuffle(points, 1, &rng);
+
+		kmeans(points, clusterCount, labels,
+			cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0),
+			3, cv::KMEANS_PP_CENTERS, centers);
+
+		img = cv::Scalar::all(0);
+
+		for (i = 0; i < sampleCount; i++)
+		{
+			int clusterIdx = labels.at<int>(i);
+			cv::Point ipt = points.at<cv::Point2f>(i);
+			circle(img, ipt, 2, colorTab[clusterIdx], CV_FILLED, CV_AA);
+		}
+
+		imshow("clusters", img);
+
+		char key = (char)cv::waitKey();
+		if (key == 27 || key == 'q' || key == 'Q') // 'ESC'
+			break;
+	}
 }

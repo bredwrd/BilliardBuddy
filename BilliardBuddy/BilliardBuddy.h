@@ -26,12 +26,12 @@
 #include "CueAugmentor.h"
 #include "TextAugmentor.h"
 #include "PhysicsModel.h"
-#include "Pocket.h"
+#include "HMDInterface.h"
 
 class BilliardBuddy
 {
 private:
-	static bool processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, CueDetector& cueDetector, PhysicsModel& physicsModel, TextAugmentor& textAugmentor, CueAugmentor& cueAugmentor);
+	static bool processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, CueDetector& cueDetector, PhysicsModel& physicsModel, TextAugmentor& textAugmentor, CueAugmentor& cueAugmentor, HMDInterface& hmdIntefrace);
 	static bool pollKeyboard(bool& preprocess);
 
 public:

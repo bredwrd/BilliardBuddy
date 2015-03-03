@@ -1,6 +1,8 @@
 #pragma once
 
 #include "FeatureDetector.h"
+#include <iostream>
+#include <stdio.h>
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -24,6 +26,8 @@ private:
 	static const int CROP_HEIGHT = 280;
 	cv::vector<cv::Vec2i> cueLine;
 	cv::vector<cv::Vec2i> cueLineHistory; // Tracks last x (e.g. 5) cueLinePoints and averages them.
+
+	void CueDetector::kmeansDemo();
 
 public:
 	CueDetector();
