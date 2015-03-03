@@ -54,10 +54,10 @@ cv::vector<pocket> PointLocator::infer(cv::vector<cv::KeyPoint> orangeKeyPoints,
 	return pockets;
 }
 
-cv::vector<pocket> labelPockets(cv::vector<cv::KeyPoint> orangeKeyPoints, cv::vector<cv::KeyPoint> greenKeyPoints,
+cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKeyPoints, cv::vector<cv::KeyPoint> greenKeyPoints,
 	cv::vector<cv::KeyPoint> purpleKeyPoints, cv::vector<cv::KeyPoint> pinkKeyPoints){
 	//Define vector of pocket points to be passed
-	cv::vector<pocket> pockets;
+	cv::vector<pocket> pockets(4);
 	int pocketCount = 0;
 	bool inferOrange = true;
 	bool inferPurple = true;

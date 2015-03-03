@@ -8,7 +8,8 @@ PhysicsModel::~PhysicsModel()
 {
 }
 
-cv::vector<cv::Vec2i> PhysicsModel::calculate(cv::Mat frame, cv::vector<pocket> pockets)
+cv::vector<Path> PhysicsModel::calculate(cv::Mat frame, cv::vector<pocket> pockets, cv::vector<cv::Vec2i> cue,
+	cv::Vec2f whiteBall, cv::vector<cv::Vec2f> balls)
 {
 	//Need 4 pockets to do warp perspective transform
 	if (pockets.size() == 4){
@@ -39,8 +40,58 @@ cv::vector<cv::Vec2i> PhysicsModel::calculate(cv::Mat frame, cv::vector<pocket> 
 		imshow("4 Point Warped Table", rotated);
 	}
 
+	//Initialize path vector to be returned
+	cv::vector<Path> pathVector;
 	
-	return ballPoints;
+	//Calculates pathVector (a vector filled with start and end points for the visual augmentor)
+	collisionModel(pathVector, whiteBall, balls, cue);
+
+	return pathVector;
+}
+
+void PhysicsModel::collisionModel(cv::vector<Path>& pathVector, cv::Vec2f motionBall, cv::vector<cv::Vec2f> balls, cv::vector<cv::Vec2i> cue){
+	//Initialize collision index to default
+	int collisionIndex = -1;
+
+	//Calculate if a ball is hit
+	//If a ball is hit return the index as collisionIndex
+	//TODO
+
+	//If there is no collision, return
+	if (collisionIndex == -1){
+		//TODO
+		//Add a path to pathVector that ends at some point
+		return;
+	}
+
+	//Calculate which ball is hit first
+	//Update collision index to that ball
+	//TODO
+
+	//Calculate collision Point
+	cv::Vec2f collisionPoint; //TODO
+
+	//Calculate collision direction vector
+	//These should just be a vector, will have to discuss with Brian about why the cue is returned as vector of vectors.
+	cv::vector<cv::Vec2i> motionBallDir; //TODO
+	cv::vector<cv::Vec2i> newMotionBallDir; //TODO
+
+	//Add collision to path vector
+	Path temp;
+	temp.startPoint = motionBall;
+	temp.endPoint = collisionPoint;
+	pathVector.push_back(temp);
+
+	//Create new motion ball to be called recursively and erase the ball that was hit from the stationary balls list
+	cv::Vec2f newMotionBall = balls[collisionIndex];
+	balls.erase(balls.begin() + collisionIndex);
+
+	//Recursively call collisionModel for white ball
+	collisionModel(pathVector, motionBall, balls, motionBallDir);
+	//Recursively call collisionModel for target ball
+	collisionModel(pathVector, newMotionBall, balls, newMotionBallDir);
+
+	return;
 }
 
 /*//TODO
