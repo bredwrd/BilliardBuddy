@@ -48,14 +48,17 @@ void BilliardBuddy::process(Settings& settings) {
 	//Initialize Physics Model Calculator
 	PhysicsModel physicsModel = PhysicsModel();
 
-	// Initialize Visual Augmentor(s)
+	// Initialize Visual Augmentors
 	TextAugmentor textAugmentor = TextAugmentor();
 	CueAugmentor cueAugmentor = CueAugmentor();
+
+	// Initialize HMD interface.
+	HMDInterface hmdInterface = HMDInterface();
 
 	// Processing Loop
 	bool result;
 	do {
-		result = processFrame(preprocess, cameraInterface, preProcessor, poolTableDetector, cueDetector, physicsModel, textAugmentor, cueAugmentor);
+		result = processFrame(preprocess, cameraInterface, preProcessor, poolTableDetector, cueDetector, physicsModel, textAugmentor, cueAugmentor, hmdInterface);
 		result = pollKeyboard(preprocess);
 	} while (result == true);
 }
@@ -73,7 +76,7 @@ bool BilliardBuddy::pollKeyboard(bool& preprocess)
 	return true;
 }
 
-bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, CueDetector& cueDetector, PhysicsModel& physicsModel, TextAugmentor& textAugmentor, CueAugmentor& cueAugmentor) {
+bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, CueDetector& cueDetector, PhysicsModel& physicsModel, TextAugmentor& textAugmentor, CueAugmentor& cueAugmentor, HMDInterface& hmdInterface) {
 	// Fetch feed from camera interface.
 	Mat leftFrame, rightFrame;
 	cameraInterface.getFrames(leftFrame, rightFrame);
@@ -95,9 +98,7 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	textAugmentor.augment(rightFrame);
 	cueAugmentor.augment(rightFrame, cueDetector.detect(rightFrame));
 
-	// Display feed to user.
-	imshow("Left", leftFrame);
-	imshow("Right", rightFrame);
+	hmdInterface.drawToHMD(leftFrame, rightFrame);
 
 	// check for errors and return false at some point
 	return true;
