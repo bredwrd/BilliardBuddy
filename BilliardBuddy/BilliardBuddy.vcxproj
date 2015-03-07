@@ -132,6 +132,7 @@
     <ClCompile Include="BilliardBuddy.cpp" />
     <ClCompile Include="CameraInterface.cpp" />
     <ClCompile Include="FeatureDetector.cpp" />
+    <ClCompile Include="Path.cpp" />
     <ClCompile Include="PhysicsModel.cpp" />
     <ClCompile Include="Pocket.cpp" />
     <ClCompile Include="PocketDetector.cpp" />

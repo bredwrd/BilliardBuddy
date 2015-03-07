@@ -60,6 +60,9 @@
     <ClCompile Include="Pocket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HMDInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Path.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -115,7 +118,7 @@
     <ClInclude Include="Pocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Path.h">
+    <ClInclude Include="HMDInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

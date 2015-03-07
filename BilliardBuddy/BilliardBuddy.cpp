@@ -2,31 +2,31 @@
 
 int main(int argc, char* argv[])
 {
-	BilliardBuddy::help();
+		BilliardBuddy::help();
+	
+		// Read config settings.
+		const string inputSettingsFile = argc > 1 ? argv[1] : "config.xml";
+		FileStorage fs(inputSettingsFile, FileStorage::READ); 
+		if (!fs.isOpened())
+		{
+			std::cout << "Could not open the configuration file: \"" << inputSettingsFile << "\"" << std::endl;
+			return -1;
+		}
+		Settings settings;
+		fs["Settings"] >> settings;
+		fs.release();
+	
+		// Check validity of inputs before training begins.
+		if (!settings.goodInput)
+		{
+			std::cout << "Invalid input detected. Application stopping. " << std::endl;
+			return -1;
+		}
+	
+		// MAIN LOGIC
+		BilliardBuddy::process(settings);
 
-	// Read config settings.
-	const string inputSettingsFile = argc > 1 ? argv[1] : "config.xml";
-	FileStorage fs(inputSettingsFile, FileStorage::READ); 
-	if (!fs.isOpened())
-	{
-		std::cout << "Could not open the configuration file: \"" << inputSettingsFile << "\"" << std::endl;
-		return -1;
-	}
-	Settings settings;
-	fs["Settings"] >> settings;
-	fs.release();
-
-	// Check validity of inputs before training begins.
-	if (!settings.goodInput)
-	{
-		std::cout << "Invalid input detected. Application stopping. " << std::endl;
-		return -1;
-	}
-
-	// MAIN LOGIC
-	BilliardBuddy::process(settings);
-
-	return 0;
+		return 0;
 }
 
 void BilliardBuddy::process(Settings& settings) {
@@ -96,11 +96,15 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 
 	//Detect White Ball
 	//TODO
-	cv::Vec2f whiteBall = { 0, 0 };
+	cv::vector<Vec2i> whiteBall(1);
+	whiteBall[0] = { 1, 1 };
 
 	//Detect other balls
 	//TODO?? Brian?
-	cv::vector<Vec2f> balls = { 0, 0 };
+	cv::vector<Vec2i> balls(3);
+	balls[0] = { 3, 3 };
+	balls[1] = { 5, 5 };
+	balls[2] = { 7, 7 };
 
 	// Calculate Physics Model
 	cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cue, whiteBall, balls);

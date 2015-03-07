@@ -9,19 +9,25 @@
 //Constants for the physics calculations
 //Radius of ball in metres
 //NOTE: TODO - Our snooker balls are smaller than the cue ball. We will have to obtain accurate measurements for these.
-static const double ballRadius = 0.028575;
+static const float ballRadius = 0.028575;
 //Radius of cue ball in metres
-static const double cueBallRadius = 0.028575;
+static const float cueBallRadius = 0.028575;
+//Maximum number of trajectories drawn in one trajectory family
+const int maxTotalTrajs = 5;
+//Maximum distance between cue stick and cue ball for cue ball to be crossed
+const int maxCueDist = 20;
 
 class PhysicsModel
 {
 private:
-	void collisionModel(cv::vector<Path>& pathVector, cv::Vec2f motionBall,
-							cv::vector<cv::Vec2f> ballPoints, cv::vector<cv::Vec2i> cue);
-
+	cv::vector<Path> getTrajectoryGroup(cv::Vec2f param1, cv::Vec2f param2, cv::vector<cv::Vec2f> targetBalls, int ballIndex, int maxTotalTrajs, float radius);
+	cv::vector<cv::Vec2f> getContactPointParams(cv::Vec2f param1, cv::Vec2f param2, cv::vector<cv::Vec2f> targetBalls, int ballIndex, float radius);
+	cv::vector<cv::Vec2f> backPointFromLine(cv::Vec2f param1, cv::Vec2f param2, cv::Vec2f target, float radius);
+	cv::Vec2f frontFromBack(cv::Vec2f backPoint, cv::Vec2f ballCoord);
+	cv::Vec2f backFromBack(cv::Vec2f backPoint, cv::Vec2f ballCoord);
 public:
 	PhysicsModel();
-	cv::vector<Path> calculate(cv::Mat frame, cv::vector<pocket> pockets, cv::vector<cv::Vec2i> cue,
-								cv::Vec2f whiteBall, cv::vector<cv::Vec2f> balls);
+	void calculateTrajectories(cv::vector<Path>& trajectoryPoints, cv::vector<cv::Vec2i> cueBall, cv::vector<cv::Vec2i> targetBalls, cv::vector<cv::Vec2i> cueStick);
+	cv::vector<Path> calculate(cv::Mat frame, cv::vector<pocket> pockets, cv::vector<cv::Vec2i> cue, cv::vector<cv::Vec2i> whiteBall, cv::vector<cv::Vec2i> balls);
 	~PhysicsModel();
 };
