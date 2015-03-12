@@ -14,8 +14,9 @@ private:
 	void CueDetector::CannyHoughLineDetect(cv::Mat frame);
 	void CueDetector::probHoughLinesCueSegments(cv::Mat& frame);
 	static const int HOUGH_THRESHOLD = 30;
-	static const int CUE_SEGMENT_MIN_LENGTH = 25;
+	static const int CUE_SEGMENT_MIN_LENGTH = 35;
 	static const int CUE_SEGMENT_MAX_GAP = 10;
+	static const int HSI_SEGMENTATION_DOWNSAMPLE_FACTOR = 2;
 	void CueDetector::mergeCueSegments(cv::Mat& frame);
 	void CueDetector::skeleton(cv::Mat& frame);
 	void CueDetector::GaussianBlur(cv::Mat& frame);

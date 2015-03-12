@@ -53,7 +53,7 @@ void CueDetector::mergeCueSegments(cv::Mat& frame)
 {
 	// Combine multiple cue segments into a single cue candidate.
 	cv::vector<cv::Vec4i> lines;
-	HoughLinesP(frame, lines , 1, CV_PI / 180, 50, 18, 100);
+	HoughLinesP(frame, lines , 1, CV_PI / 180, 50, 40, 60);
 
 	if (lines.size() > 0)
 	{
@@ -111,16 +111,23 @@ void CueDetector::hsiSegment(cv::Mat& frame)
 	int minV = 50;
 	int maxV = 150;
 
+	// Downsample before hsi segmentation
+	cv::Mat downsampledFrame;
+	cv::resize(frame, downsampledFrame, cv::Size(0, 0), 0.5, 0.5, cv::INTER_CUBIC);
+
+	// Convert the captured frame from BGR to HSV
 	cv::Mat hsvFrame;
+	cvtColor(downsampledFrame, hsvFrame, cv::COLOR_BGR2HSV); 
 
-	cvtColor(frame, hsvFrame, cv::COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
-
+	// Threshold the image
 	cv::Mat hsvMask;
+	inRange(hsvFrame, cv::Scalar(minH, minS, minV), cv::Scalar(maxH, maxS, maxV), hsvMask);
 
-	inRange(hsvFrame, cv::Scalar(minH, minS, minV), cv::Scalar(maxH, maxS, maxV), hsvMask); //Threshold the image
+	// Upsample after hsi segmentation
+	cv::Mat upsampledFrame;
+	cv::resize(hsvMask, hsvMask, cv::Size(0, 0), HSI_SEGMENTATION_DOWNSAMPLE_FACTOR, HSI_SEGMENTATION_DOWNSAMPLE_FACTOR, cv::INTER_CUBIC);
 
-	//Used to make the mask bigger (For our specific situation we want to make sure the mask
-	//includes the whole pool table, having it a bit bigger than the pool table is not an issue.
+	// Used to make the mask bigger
 	dilate(hsvMask, hsvMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(4, 4)));
 
 	cv::Mat maskedFrame;
@@ -151,7 +158,7 @@ void CueDetector::skeleton(cv::Mat& frame)
 	cv::Mat temp;
 	cv::Mat eroded;
 
-	cv::Mat element = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3));
+	cv::Mat element = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
 
 	bool done;
 	do
@@ -166,63 +173,4 @@ void CueDetector::skeleton(cv::Mat& frame)
 	} while (!done);
 
 	frame = skel.clone();
-}
-
-void CueDetector::kmeansDemo()
-{
-	const int MAX_CLUSTERS = 5;
-	cv::Scalar colorTab[] =
-	{
-		cv::Scalar(0, 0, 255),
-		cv::Scalar(0, 255, 0),
-		cv::Scalar(255, 100, 100),
-		cv::Scalar(255, 0, 255),
-		cv::Scalar(0, 255, 255)
-	};
-
-	cv::Mat img(500, 500, CV_8UC3);
-	cv::RNG rng(12345);
-
-	for (;;)
-	{
-		int k, clusterCount = rng.uniform(2, MAX_CLUSTERS + 1);
-		int i, sampleCount = rng.uniform(1, 1001);
-		cv::Mat points(sampleCount, 2, CV_32F), labels;
-
-		clusterCount = MIN(clusterCount, sampleCount);
-		cv::Mat centers;
-
-		/* generate random sample from multigaussian distribution */
-		for (k = 0; k < clusterCount; k++)
-		{
-			cv::Point center;
-			center.x = rng.uniform(0, img.cols);
-			center.y = rng.uniform(0, img.rows);
-			cv::Mat pointChunk = points.rowRange(k*sampleCount / clusterCount,
-				k == clusterCount - 1 ? sampleCount :
-				(k + 1)*sampleCount / clusterCount);
-			rng.fill(pointChunk, CV_RAND_NORMAL, cv::Scalar(center.x, center.y), cv::Scalar(img.cols*0.05, img.rows*0.05));
-		}
-
-		randShuffle(points, 1, &rng);
-
-		kmeans(points, clusterCount, labels,
-			cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0),
-			3, cv::KMEANS_PP_CENTERS, centers);
-
-		img = cv::Scalar::all(0);
-
-		for (i = 0; i < sampleCount; i++)
-		{
-			int clusterIdx = labels.at<int>(i);
-			cv::Point ipt = points.at<cv::Point2f>(i);
-			circle(img, ipt, 2, colorTab[clusterIdx], CV_FILLED, CV_AA);
-		}
-
-		imshow("clusters", img);
-
-		char key = (char)cv::waitKey();
-		if (key == 27 || key == 'q' || key == 'Q') // 'ESC'
-			break;
-	}
 }
