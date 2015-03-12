@@ -31,7 +31,9 @@ cv::vector<cv::Vec2i> CueDetector::detect(cv::Mat frame)
 void CueDetector::probHoughLinesCueSegments(cv::Mat& frame) {
 	// Finds segments of a cue interrupted by a hand.
 	cv::vector<cv::Vec4i> lines;
+	imshow("Debug HoughLines preframe", frame);
 	HoughLinesP(frame, lines, 1, CV_PI / 180, HOUGH_THRESHOLD, CUE_SEGMENT_MIN_LENGTH, CUE_SEGMENT_MAX_GAP);
+	imshow("Debug HoughLines postframe", frame);
 
 	cv::Mat houghMap(frame.size(), CV_8UC1, cv::Scalar(0));
 
@@ -100,14 +102,14 @@ void CueDetector::mergeCueSegments(cv::Mat& frame)
 void CueDetector::hsiSegment(cv::Mat& frame)
 {
 	//Can be used to control with trackbars the values
-	int minH = 10;
-	int maxH = 40;
+	int minH = 14;
+	int maxH = 57;
 
-	int minS = 1;
-	int maxS = 170;
+	int minS = 155;
+	int maxS = 215;
 
-	int minV = 175;
-	int maxV = 255;
+	int minV = 50;
+	int maxV = 150;
 
 	cv::Mat hsvFrame;
 
@@ -144,7 +146,7 @@ void CueDetector::skeleton(cv::Mat& frame)
 
 	cvtColor(frame, frame, cv::COLOR_BGR2GRAY); //Convert the captured frame from BGR to greyscale
 
-	cv::threshold(frame, frame, 127, 255, cv::THRESH_BINARY);
+	cv::threshold(frame, frame, 1, 255, cv::THRESH_BINARY);
 	cv::Mat skel(frame.size(), CV_8UC1, cv::Scalar(0));
 	cv::Mat temp;
 	cv::Mat eroded;
