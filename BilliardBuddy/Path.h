@@ -10,8 +10,8 @@
 struct Path {
 	cv::Vec2f startPoint;
 	cv::Vec2f endPoint;
-	Path();
-	~Path();
+	/*Path();
+	~Path();*/
 };
 
 #endif
