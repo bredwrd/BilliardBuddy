@@ -27,8 +27,6 @@ private:
 	cv::vector<cv::Vec2i> cueLine;
 	cv::vector<cv::Vec2i> cueLineHistory; // Tracks last x (e.g. 5) cueLinePoints and averages them.
 
-	void CueDetector::kmeansDemo();
-
 public:
 	CueDetector();
 	cv::vector<cv::Vec2i> detect(cv::Mat frame);
