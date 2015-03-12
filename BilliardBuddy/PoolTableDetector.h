@@ -24,6 +24,7 @@ private:
 	cv::Mat hsiSegment(cv::Mat frame, int open_size, int close_size, int iLowH, int iLowS, int iLowV,
 		int iHighH, int iHighS, int iHighV);
 	cv::vector<pocket> pockets;
+	static const int HSI_SEGMENTATION_DOWNSAMPLE_FACTOR = 2;
 
 public:
 	PoolTableDetector();

@@ -23,20 +23,19 @@ cv::vector<pocket> PoolTableDetector::detectTable(cv::Mat frame)
 cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat& frame)
 {
 	//Can be used to control with trackbars the values
-	int iLowH = 40; //Try GIMP converting from 110 if table needs to be tightened up
-	int iHighH = 130; //Try GIMP converting from 150 if ^
+	int iLowH = 55; //Try GIMP converting from 110 if table needs to be tightened up
+	int iHighH = 120; //Try GIMP converting from 150 if ^
 
-	int iLowS = 40;
-	int iHighS = 200;
+	int iLowS = 100;
+	int iHighS = 255;
 
-	int iLowV = 30;
+	int iLowV = 5;
 	int iHighV = 200;
 
 	//Specify opening/closing size
-	int open_size = 32;
-	int close_size = 32;
+	int open_size = 16;
+	int close_size = 16;
 
-	//Create binary colour segmented mask
 	cv::Mat tableMask = PoolTableDetector::hsiSegment(frame, open_size, close_size,
 		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
 
@@ -61,19 +60,19 @@ cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& t
 
 	cv::vector<cv::Vec4i> lines;
 	HoughLinesP(houghMap, lines, 1, CV_PI / 180, 10, 10, 10);
-	for (size_t i = 0; i < lines.size(); i++)
+	/*for (size_t i = 0; i < lines.size(); i++)
 	{
 		cv::Vec4i l = lines[i];
 		line(houghMap, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0, 0, 255), 1, CV_AA);
 	}
-	imshow("Rail Edge Hough", houghMap);
+	imshow("Rail Edge Hough", houghMap);*/
 
 	// Expand pool edge to include some padding to contain the rail.
 	dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(50, 50)));
 
 	cv::Mat maskedEdgeFrame;
 	frame.copyTo(maskedEdgeFrame, tableMask);
-	imshow("Rail Edge", maskedEdgeFrame);
+	//imshow("Rail Edge", maskedEdgeFrame);
 
 	//Initialize Pocket Detector
 	PocketDetector pocketDetector = PocketDetector();
