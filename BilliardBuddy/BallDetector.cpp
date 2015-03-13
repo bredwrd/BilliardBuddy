@@ -77,7 +77,7 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 	cv::Mat maskedFrame;
 	cv::Mat allPocketMask = redBallMask + whiteBallMask;
 	frame.copyTo(maskedFrame, allPocketMask);
-	imshow("All Balls", maskedFrame);
+	//imshow("All Balls", maskedFrame);
 
 	// set up the parameters (check the defaults in opencv's code in blobdetector.cpp)
 	cv::SimpleBlobDetector::Params params;
@@ -118,7 +118,7 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 	cv::drawKeypoints(allPocketMask, keypoints, keypointMask, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 	cv::Mat maskedKeypointFrame;
 	frame.copyTo(maskedFrame, allPocketMask);
-	imshow("All Pockets w/ Points", keypointMask);
+	//imshow("All Pockets w/ Points", keypointMask);
 }
 
 void BallDetector::detectWithHoughCircles(cv::Mat& frame)
@@ -144,5 +144,5 @@ void BallDetector::detectWithHoughCircles(cv::Mat& frame)
 		circle(frame, center, radius, cv::Scalar(0, 0, 255), 3, 8, 0);
 	}
 
-	imshow("BallDetector", frame);
+	//imshow("BallDetector", frame);
 }

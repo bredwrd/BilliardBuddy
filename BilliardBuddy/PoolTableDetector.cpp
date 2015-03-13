@@ -36,7 +36,6 @@ cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat&
 	int open_size = 4;
 	int close_size = 4;
 
-
 	// Downsample before hsi segmentation
 	cv::Mat downsampledFrame;
 	cv::resize(frame, downsampledFrame, cv::Size(0, 0), 0.125, 0.125, cv::INTER_LINEAR);
@@ -48,13 +47,13 @@ cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat&
 	// Upsample after hsi segmentation
 	cv::resize(tableMask, tableMask, cv::Size(0, 0), 8, 8, cv::INTER_CUBIC);
 
-	//morphological opening (remove small objects from the foreground)
+	// Morphological opening (remove small objects from the foreground)
 	erode(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(8*open_size, 8*open_size)));
 	dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16*open_size, 16*open_size)));
 
 	cv::Mat maskedFrame;
 	frame.copyTo(maskedFrame, tableMask);
-	imshow("Masked Pool Table", maskedFrame);
+	//imshow("Masked Pool Table", maskedFrame);
 
 	// Run BallDetector on masked pool table
 	BallDetector ballDetector = BallDetector();
@@ -85,12 +84,12 @@ cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& t
 
 	cv::Mat maskedEdgeFrame;
 	frame.copyTo(maskedEdgeFrame, tableMask);
-	imshow("Rail Edge", maskedEdgeFrame);
+	//imshow("Rail Edge", maskedEdgeFrame);
 
-	//Initialize Pocket Detector
+	// Initialize Pocket Detector
 	PocketDetector pocketDetector = PocketDetector();
 
-	//Run pocket detector
+	// Run pocket detector
 	return pocketDetector.detectPockets(maskedEdgeFrame);
 }
 

@@ -31,9 +31,7 @@ cv::vector<cv::Vec2i> CueDetector::detect(cv::Mat frame)
 void CueDetector::probHoughLinesCueSegments(cv::Mat& frame) {
 	// Finds segments of a cue interrupted by a hand.
 	cv::vector<cv::Vec4i> lines;
-	imshow("Debug HoughLines preframe", frame);
 	HoughLinesP(frame, lines, 1, CV_PI / 180, HOUGH_THRESHOLD, CUE_SEGMENT_MIN_LENGTH, CUE_SEGMENT_MAX_GAP);
-	imshow("Debug HoughLines postframe", frame);
 
 	cv::Mat houghMap(frame.size(), CV_8UC1, cv::Scalar(0));
 
@@ -44,7 +42,7 @@ void CueDetector::probHoughLinesCueSegments(cv::Mat& frame) {
 
 	mergeCueSegments(houghMap);
 
-	imshow("Cue Segments", houghMap);
+	//imshow("Cue Segments", houghMap);
 
 	frame = houghMap.clone();
 }
@@ -133,7 +131,7 @@ void CueDetector::hsiSegment(cv::Mat& frame)
 	frame.copyTo(maskedFrame, hsvMask);
 	frame = maskedFrame.clone();
 
-	imshow("HSI Cue", frame);
+	//imshow("HSI Cue", frame);
 }
 
 void CueDetector::GaussianBlur(cv::Mat& frame)
