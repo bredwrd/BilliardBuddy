@@ -56,9 +56,11 @@ cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat&
 	//imshow("Masked Pool Table", maskedFrame);
 
 	// Run BallDetector on masked pool table
-	BallDetector ballDetector = BallDetector();
-	ballDetector.detect(maskedFrame);
-
+	if (BilliardBuddy::getFrameIterator() == 4)
+	{
+		BallDetector ballDetector = BallDetector();
+		ballDetector.detect(maskedFrame);
+	}
 	return detectTableEdge(frame, tableMask);
 }
 

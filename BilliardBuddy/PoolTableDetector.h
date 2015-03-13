@@ -4,6 +4,7 @@
 #include "PocketDetector.h"
 #include "BallDetector.h"
 #include "Pocket.h"
+#include "BilliardBuddy.h"
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
