@@ -120,7 +120,7 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	cueAugmentor.augment(rightFrame, cueCoords);
 	hmdInterface.drawToHMD(leftFrame, rightFrame);
 
-	if (frameIterator == 5)
+	if (frameIterator == 7)
 	{
 		frameIterator = 1;
 	}
