@@ -45,7 +45,7 @@ cv::vector<Path> PhysicsModel::calculate(cv::Mat frame, cv::vector<pocket> pocke
 		cv::vector<Path> trajectoryPoints;
 
 		//Calculates pathVector (a vector filled with start and end points for the visual augmentor)
-		calculateTrajectories(trajectoryPoints, whiteBall, balls, cue, destPoints);
+		calculateTrajectories(trajectoryPoints, whiteBall, balls, cue);
 
 		return trajectoryPoints;
 	
@@ -53,7 +53,7 @@ cv::vector<Path> PhysicsModel::calculate(cv::Mat frame, cv::vector<pocket> pocke
 
 }
 
-void PhysicsModel::calculateTrajectories(cv::vector<Path>& trajectoryPoints, cv::vector<cv::Vec2i> cueBall, cv::vector<cv::Vec2i> targetBalls, cv::vector<cv::Vec2i> cueStick, cv::vector<cv::Point2f> pockets){
+void PhysicsModel::calculateTrajectories(cv::vector<Path>& trajectoryPoints, cv::vector<cv::Vec2i> cueBall, cv::vector<cv::Vec2i> targetBalls, cv::vector<cv::Vec2i> cueStick){
 	
 	//Convert input coordinates to floats (not needed if output of perspective trans are floats)
 	cv::vector<cv::Vec2f> cueBallf(cueBall.size());
@@ -71,18 +71,18 @@ void PhysicsModel::calculateTrajectories(cv::vector<Path>& trajectoryPoints, cv:
 	}
 	
 	//Check if cue stick crosses cue ball
-	cv::vector<cv::Vec2f> CueBallParams = getContactPointParams(0,cueStickf[0],cueStickf[1],cueBallf,0,pockets,cueBallRadius);
-	
-	////Cue stick crosses cue ball and cue stick is close enough to cue ball
+	cv::vector<cv::Vec2f> CueBallParams = getContactPointParams(0,cueStickf[0],cueStickf[1],cueBallf,0,cueBallRadius);
+
+	//Cue stick crosses cue ball and cue stick is close enough to cue ball
 	if ((CueBallParams[0][0] == 0) && (norm(cueStickf[1],cueBallf[0]) < (float)maxCueDist)){
-		trajectoryPoints = getTrajectoryGroup(CueBallParams[1], CueBallParams[4], targetBallsf, 0, pockets);
+		trajectoryPoints = getTrajectoryGroup(CueBallParams[1], CueBallParams[4], targetBallsf, 0);
 	}
 
 	return;
 
 }
 
-cv::vector<Path> PhysicsModel::getTrajectoryGroup(cv::Vec2f param1, cv::Vec2f param2, cv::vector<cv::Vec2f> targetBalls, int ballIndex, cv::vector<cv::Point2f> pockets)
+cv::vector<Path> PhysicsModel::getTrajectoryGroup(cv::Vec2f param1, cv::Vec2f param2, cv::vector<cv::Vec2f> targetBalls, int ballIndex)
 {
 	//Initialize variables
 	Path mainTrajectory;
@@ -91,19 +91,19 @@ cv::vector<Path> PhysicsModel::getTrajectoryGroup(cv::Vec2f param1, cv::Vec2f pa
 	cv::vector<cv::Vec2f> mainResults;
 	cv::vector<cv::Vec2f> branchResults;
 	cv::Vec2f ghostSlope;
-	cv::vector<cv::Vec2f> ghostPoint1;
-	cv::vector<cv::Vec2f> ghostPoint2;
-	cv::vector<cv::Vec2f> ghostBackPoint;
-	cv::vector<cv::Vec2f> ghostFrontPoint;
+	cv::vector<cv::Vec2f> ghostPoint1(1);
+	cv::vector<cv::Vec2f> ghostPoint2(1);
+	cv::vector<cv::Vec2f> ghostBackPoint(1);
+	cv::vector<cv::Vec2f> ghostFrontPoint(1);
 	int edgeCount = 0;
 	int t = 1;
-	float maxBranchLength = cutFactor*(abs(pockets[0].y-pockets[3].y));
+	//float maxBranchLength = cutFactor*(abs(pockets[0].y-pockets[3].y));
 	int featureIndex = 0;
 	int branchFlag;
-
+	
 	//Calculate start and end points of trajectories
 	while ((t <= maxTotalTrajs)&&(edgeCount <= maxEdgeTrajs)){
-
+	
 		//Set start point
 		if (featureIndex == 0){
 			mainTrajectory.startPoint = param2;
@@ -113,7 +113,7 @@ cv::vector<Path> PhysicsModel::getTrajectoryGroup(cv::Vec2f param1, cv::Vec2f pa
 		}
 
 		//Obtain parameters on next contacted feature in main trajectory group
-		mainResults = getContactPointParams(featureIndex, param1, param2, targetBalls, ballIndex, pockets, 2*ballRadius);
+		mainResults = getContactPointParams(featureIndex, param1, param2, targetBalls, ballIndex, 2*ballRadius);
 		mainTrajectory.endPoint = mainResults[1];
 		trajectoryPoints.push_back(mainTrajectory);
 
@@ -122,14 +122,14 @@ cv::vector<Path> PhysicsModel::getTrajectoryGroup(cv::Vec2f param1, cv::Vec2f pa
 			
 			//Calculate branch points
 			branchTrajectory.startPoint = mainResults[1];
-			if (mainResults[2][0] == mainResults[3][0]){
+			if (mainResults[2][0] == mainResults[3][0]){ //infinity slope case
 				ghostPoint1[0][0] = mainResults[1][0];
 				ghostPoint1[0][1] = mainResults[1][1]-ballRadius;
 				ghostPoint2[0][0] = mainResults[1][0];
 				ghostPoint2[0][1] = mainResults[1][1]+ballRadius;
 			}
 			else{
-				ghostSlope = (-(mainResults[3][1]-mainResults[2][1])/(mainResults[3][0]-mainResults[2][0]));
+				ghostSlope = -1/((mainResults[3][1]-mainResults[2][1])/(mainResults[3][0]-mainResults[2][0]));
 				ghostPoint1 = backPointFromLine(1,mainResults[1],ghostSlope,mainResults[1],ballRadius);
 				ghostPoint2[0] = frontFromBack(ghostPoint1[0],mainResults[1]);
 			}
@@ -148,12 +148,13 @@ cv::vector<Path> PhysicsModel::getTrajectoryGroup(cv::Vec2f param1, cv::Vec2f pa
 			}
 
 			if (branchFlag == 1){
-				branchResults = getContactPointParams(0,ghostBackPoint[0],ghostFrontPoint[0],targetBalls,ballIndex,pockets,2*ballRadius);
+				branchResults = getContactPointParams(0,ghostBackPoint[0],ghostFrontPoint[0],targetBalls,ballIndex,2*ballRadius);
 				branchTrajectory.endPoint = branchResults[1];
 				trajectoryPoints.push_back(branchTrajectory);
 			}
 			
 			//Next loop info for main trajectory
+			featureIndex = 0;
 			param1 = mainResults[2];
 			param2 = mainResults[3];
 			ballIndex = (int)mainResults[5][0];
@@ -161,6 +162,7 @@ cv::vector<Path> PhysicsModel::getTrajectoryGroup(cv::Vec2f param1, cv::Vec2f pa
 
 		}
 		else if (mainResults[0][0] == 1){ //edge was hit
+			featureIndex = 1;
 			param1 = mainResults[1];
 			param2 = mainResults[2];
 			edgeCount++;
@@ -173,7 +175,7 @@ cv::vector<Path> PhysicsModel::getTrajectoryGroup(cv::Vec2f param1, cv::Vec2f pa
 	return trajectoryPoints;
 }
 
-cv::vector<cv::Vec2f> PhysicsModel::getContactPointParams(int featureIndex,cv::Vec2f param1,cv::Vec2f param2,cv::vector<cv::Vec2f> targetBalls,int targetBallIndex,cv::vector<cv::Point2f> pockets,float radiusBall)
+cv::vector<cv::Vec2f> PhysicsModel::getContactPointParams(int featureIndex,cv::Vec2f param1,cv::Vec2f param2,cv::vector<cv::Vec2f> targetBalls,int targetBallIndex,float radiusBall)
 {
 	//Define empty vectors to store data, and determine number of target balls
 	cv::vector<cv::Vec2f> nextParams;
@@ -234,10 +236,10 @@ cv::vector<cv::Vec2f> PhysicsModel::getContactPointParams(int featureIndex,cv::V
 		nextParams.push_back({(float)ballMinIndex,0});
 	}	
 	else{
-		cv::vector<cv::Vec2f> pocketIntPoint = pocketPointFromLine(featureIndex,param1,param2,pockets,pocketRadius);
+		cv::vector<cv::Vec2f> pocketIntPoint = pocketPointFromLine(featureIndex,param1,param2,pocketRadius);
 		if (pocketIntPoint.size()==0){ //edge hit
 			nextParams.push_back({ 1, 0 });
-			cv::vector<cv::Vec2f> edgeIntPoint = edgePointFromLine(featureIndex,param1,param2,pockets);
+			cv::vector<cv::Vec2f> edgeIntPoint = edgePointFromLine(featureIndex,param1,param2);
 			nextParams.push_back(edgeIntPoint[0]);
 			cv::Vec2f reflectSlope;
 			if (featureIndex == 0){ //input was ball
@@ -352,13 +354,9 @@ cv::vector<cv::Vec2f> PhysicsModel::backPointFromLine(int featureIndex, cv::Vec2
 
 }
 
-cv::vector<cv::Vec2f> PhysicsModel::edgePointFromLine(int featureIndex, cv::Vec2f param1, cv::Vec2f param2, cv::vector<cv::Point2f> pockets){
+cv::vector<cv::Vec2f> PhysicsModel::edgePointFromLine(int featureIndex, cv::Vec2f param1, cv::Vec2f param2){
 	
 	cv::vector<cv::Vec2f> edgeIntPoint;
-	cv::Vec2f PT_UR = { pockets[0].x, pockets[0].y };
-	cv::Vec2f PT_UL = { pockets[1].x, pockets[1].y };
-	cv::Vec2f PT_BL = { pockets[2].x, pockets[2].y };
-	cv::Vec2f PT_BR = { pockets[3].x, pockets[3].y };
 	cv::vector<cv::Vec2f> edgePoint1;
 	cv::vector<cv::Vec2f> edgePoint2;
 	float slope;
@@ -411,7 +409,7 @@ cv::vector<cv::Vec2f> PhysicsModel::edgePointFromLine(int featureIndex, cv::Vec2
 		}
 
 		for (i = 0; i < candidates2.size(); i++){
-			if ((candidates2[i][0] != PT_UR[0]) && (candidates2[i][1] != PT_UR[1]) && (candidates2[i][0] != PT_UL[0]) && (candidates2[i][1] != PT_UL[1]) && (candidates2[i][0] != PT_BL[0]) && (candidates2[i][1] != PT_BL[1]) && (candidates2[i][0] != PT_BR[0]) && (candidates2[i][1] != PT_BR[1])){
+			if (((candidates2[i][0] != PT_UR[0]) && (candidates2[i][1] != PT_UR[1])) || ((candidates2[i][0] != PT_UL[0]) && (candidates2[i][1] != PT_UL[1])) || ((candidates2[i][0] != PT_BL[0]) && (candidates2[i][1] != PT_BL[1])) || ((candidates2[i][0] != PT_BR[0]) && (candidates2[i][1] != PT_BR[1]))){
 				candidates3.push_back(candidates2[i]);
 			}
 		}
@@ -427,11 +425,21 @@ cv::vector<cv::Vec2f> PhysicsModel::edgePointFromLine(int featureIndex, cv::Vec2
 	}
 
 	if (edgeIntPoint.size() == 0){
-		if (norm(edgePoint1[0],param1)<norm(edgePoint2[0],param1)){
-			edgeIntPoint = edgePoint2;
+		if (featureIndex==0){
+			if (norm(edgePoint1[0],param1) < norm(edgePoint1[0],param2)){
+				edgeIntPoint = edgePoint2;
+			}
+			else{
+				edgeIntPoint = edgePoint1;
+			}
 		}
 		else{
-			edgeIntPoint = edgePoint1;
+			if (norm(edgePoint1[0], param1)<norm(edgePoint2[0], param1)){
+				edgeIntPoint = edgePoint2;
+			}
+			else{
+				edgeIntPoint = edgePoint1;
+			}
 		}
 	}
 
@@ -439,13 +447,13 @@ cv::vector<cv::Vec2f> PhysicsModel::edgePointFromLine(int featureIndex, cv::Vec2
 
 }
 
-cv::vector<cv::Vec2f> PhysicsModel::pocketPointFromLine(int featureIndex, cv::Vec2f param1, cv::Vec2f param2, cv::vector<cv::Point2f> pockets, float radius){
+cv::vector<cv::Vec2f> PhysicsModel::pocketPointFromLine(int featureIndex, cv::Vec2f param1, cv::Vec2f param2, float radius){
 	
 	cv::vector<cv::Vec2f> pocketCoordinates(4);
-	pocketCoordinates[0] = {pockets[0].x, pockets[0].y};
-	pocketCoordinates[1] = {pockets[1].x, pockets[1].y};
-	pocketCoordinates[2] = {pockets[2].x, pockets[2].y};
-	pocketCoordinates[3] = {pockets[3].x, pockets[3].y};
+	pocketCoordinates[0] = PT_UR;
+	pocketCoordinates[1] = PT_UL;
+	pocketCoordinates[2] = PT_BL;
+	pocketCoordinates[3] = PT_BR;
 
 	cv::vector<cv::Vec2f> pocketIntPoint;
 

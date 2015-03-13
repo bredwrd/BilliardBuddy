@@ -97,18 +97,18 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	//Detect White Ball
 	//TODO
 	cv::vector<Vec2i> whiteBall(1);
-	whiteBall[0] = { 1, 1 };
+	whiteBall[0] = { 200, 100 };
 
 	//Detect other balls
 	//TODO?? Brian?
-	cv::vector<Vec2i> balls(3);
-	balls[0] = { 3, 3 };
-	balls[1] = { 5, 5 };
-	balls[2] = { 7, 7 };
+	cv::vector<Vec2i> balls(2);
+	balls[0] = { 200, 140 };
+	balls[1] = { 200, 170 };
+	balls[2] = { 150, 150 };
 
 	// Calculate Physics Model
-	//cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cue, whiteBall, balls);
-
+	cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cue, whiteBall, balls);
+	
 	// Visually augment.
 	textAugmentor.augment(rightFrame);
 	cueAugmentor.augment(rightFrame, cue);
