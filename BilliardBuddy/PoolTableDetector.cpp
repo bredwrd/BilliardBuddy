@@ -40,32 +40,48 @@ cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat&
 
 	// Downsample before hsi segmentation
 	cv::Mat downsampledFrame;
-	cv::resize(frame, downsampledFrame, cv::Size(0, 0), 0.125, 0.125, cv::INTER_LINEAR);
 
 	// HSV segment
-	cv::Mat tableMask = PoolTableDetector::hsiSegment(downsampledFrame, open_size, close_size,
-		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
-
-	// Upsample after hsi segmentation
-	cv::resize(tableMask, tableMask, cv::Size(0, 0), 8, 8, cv::INTER_CUBIC);
-
-	// Morphological opening (remove small objects from the foreground)
-	erode(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(8*open_size, 8*open_size)));
-	dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16*open_size, 16*open_size)));
-
-	cv::Mat maskedFrame;
-	frame.copyTo(maskedFrame, tableMask);
-	//imshow("Masked Pool Table", maskedFrame);
-
-	// Run BallDetector on masked pool table
-	if (frameIterator == 4)
+	if (frameIterator == 3 || frameIterator == 0)
 	{
+		cv::resize(frame, downsampledFrame, cv::Size(0, 0), 0.125, 0.125, cv::INTER_LINEAR);
+
+		// HSV segment
+		tableMask = PoolTableDetector::hsiSegment(downsampledFrame, open_size, close_size,
+			iLowH, iLowS, iLowV, iHighH, iHighS, iHighV, frameIterator);
+
+		// Upsample after hsi segmentation
+		cv::resize(tableMask, tableMask, cv::Size(0, 0), 8, 8, cv::INTER_CUBIC);
+	}
+	else 
+	{
+		PoolTableDetector::hsiSegment(downsampledFrame, open_size, close_size,
+			iLowH, iLowS, iLowV, iHighH, iHighS, iHighV, frameIterator);
+	}
+
+	if (frameIterator == 4 || frameIterator == 0)
+	{
+		// Morphological opening (remove small objects from the foreground)
+		erode(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(8 * open_size, 8 * open_size)));
+		dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16 * open_size, 16 * open_size)));
+	}
+
+	if (frameIterator == 5 || frameIterator == 0)
+	{
+		cv::Mat maskedFrame;
+		frame.copyTo(maskedFrame, tableMask);
 		ballCoordinates = ballDetector.detect(maskedFrame, frameIterator);
 	}
-	return detectTableEdge(frame, tableMask, frameIterator);
+
+	if (frameIterator == 6 || frameIterator == 0)
+	{
+
+	}
+
+	return detectTableEdge(frame, frameIterator);
 }
 
-cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& tableMask, int frameIterator)
+cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, int frameIterator)
 {
 	// Thin the edge of the pool table colour.
 	Canny(tableMask, tableMask, 100, 180, 3, true);
@@ -97,24 +113,30 @@ cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& t
 }
 
 cv::Mat PoolTableDetector::hsiSegment(cv::Mat frame, int open_size, int close_size, int iLowH, int iLowS, int iLowV,
-												int iHighH, int iHighS, int iHighV){
-	//Convert the captured frame from BGR to HSV
-	cv::Mat imgHSV;
-	cvtColor(frame, imgHSV, cv::COLOR_BGR2HSV); 
+												int iHighH, int iHighS, int iHighV, int frameIterator){
+	
+	if (frameIterator == 2 || frameIterator == 0)
+	{
+		//Convert the captured frame from BGR to HSV
+		cv::Mat imgHSV;
+		cvtColor(frame, imgHSV, cv::COLOR_BGR2HSV);
 
-	//Create mask
-	cv::Mat maskedFrame;
-	inRange(imgHSV, cv::Scalar(iLowH, iLowS, iLowV), cv::Scalar(iHighH, iHighS, iHighV), maskedFrame); //Threshold the image
+		//Create mask
+		inRange(imgHSV, cv::Scalar(iLowH, iLowS, iLowV), cv::Scalar(iHighH, iHighS, iHighV), hsiSegmentationStageOneFrame); //Threshold the image
 
-	//morphological opening (remove small objects from the foreground)
-	erode(maskedFrame, maskedFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(open_size, open_size)));
-	dilate(maskedFrame, maskedFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(open_size, open_size)));
+		//morphological opening (remove small objects from the foreground)
+		erode(hsiSegmentationStageOneFrame, hsiSegmentationStageOneFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(open_size, open_size)));
+		dilate(hsiSegmentationStageOneFrame, hsiSegmentationStageOneFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(open_size, open_size)));
+	}
+	if (frameIterator == 3 || frameIterator == 0)
+	{
+		//morphological closing (fill small holes in the foreground)
+		dilate(hsiSegmentationStageOneFrame, hsiSegmentationStageTwoFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(close_size, close_size)));
+		erode(hsiSegmentationStageTwoFrame, hsiSegmentationStageTwoFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(close_size, close_size)));
+	}
 
-	//morphological closing (fill small holes in the foreground)
-	dilate(maskedFrame, maskedFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(close_size, close_size)));
-	erode(maskedFrame, maskedFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(close_size, close_size)));
 
-	return maskedFrame;
+	return hsiSegmentationStageTwoFrame;
 }
 
 void PoolTableDetector::probHoughLines(cv::Mat& frame, cv::Mat& houghMap, int threshold, int minLineLength, int maxLineGap) {

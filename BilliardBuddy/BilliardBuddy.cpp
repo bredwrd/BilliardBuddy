@@ -1,6 +1,6 @@
 #include "BilliardBuddy.h"
 
-int BilliardBuddy::frameIterator = 1;
+int BilliardBuddy::frameIterator = 0;
 cv::vector<Vec2i> BilliardBuddy::cueCoords = cv::vector<Vec2i>(0, 0);
 
 int main(int argc, char* argv[])
