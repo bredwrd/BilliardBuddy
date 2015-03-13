@@ -45,7 +45,7 @@ cv::vector<Path> PhysicsModel::calculate(cv::Mat frame, cv::vector<pocket> pocke
 		cv::vector<Path> trajectoryPoints;
 
 		//Calculates pathVector (a vector filled with start and end points for the visual augmentor)
-		calculateTrajectories(trajectoryPoints, whiteBall, balls, cue, destPoints);
+		//calculateTrajectories(trajectoryPoints, whiteBall, balls, cue, destPoints);
 
 		return trajectoryPoints;
 	
