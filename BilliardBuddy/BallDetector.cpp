@@ -15,6 +15,7 @@ cv::vector<cv::Vec2i> BallDetector::detect(cv::Mat frame, int frameIterator)
 	// Reset cueLines.
 	ballCoordinates.clear();
 
+	imshow("Debug frame1", frame);
 	//detectWithHoughCircles(frame);
 	detectWithBlobDetector(frame);
 
@@ -44,6 +45,7 @@ cv::Mat BallDetector::hsiSegment(cv::Mat& frame, int open_size, int close_size, 
 
 void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 {
+	imshow("debug frame", frame);
 	//Specify opening/closing size
 	int open_size = 5;
 	int close_size = 5;
@@ -77,7 +79,7 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 	cv::Mat maskedFrame;
 	cv::Mat allPocketMask = redBallMask + whiteBallMask;
 	frame.copyTo(maskedFrame, allPocketMask);
-	//imshow("All Balls", maskedFrame);
+	imshow("All Balls", maskedFrame);
 
 	// set up the parameters (check the defaults in opencv's code in blobdetector.cpp)
 	cv::SimpleBlobDetector::Params params;
