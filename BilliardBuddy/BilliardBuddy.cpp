@@ -1,5 +1,7 @@
 #include "BilliardBuddy.h"
 
+int BilliardBuddy::frameIterator;
+
 int main(int argc, char* argv[])
 {
 		BilliardBuddy::help();
@@ -56,6 +58,7 @@ void BilliardBuddy::process(Settings& settings) {
 	HMDInterface hmdInterface = HMDInterface();
 
 	// Processing Loop
+	frameIterator = 1;
 	bool result;
 	do {
 		result = processFrame(preprocess, cameraInterface, preProcessor, poolTableDetector, cueDetector, physicsModel, textAugmentor, cueAugmentor, hmdInterface);
@@ -125,6 +128,11 @@ void BilliardBuddy::help()
 		<< "Usage: BilliardBuddy.exe <configpath.xml>" << std::endl
 		<< "Near the sample file you'll find the configuration file, which has detailed help of "
 		"how to edit it.  It may be any OpenCV supported file format XML/YAML." << std::endl;
+}
+
+int BilliardBuddy::getFrameIterator()
+{
+	return 42;// frameIterator;
 }
 
 void read(const FileNode& node, Settings& x, const Settings& default_value = Settings())

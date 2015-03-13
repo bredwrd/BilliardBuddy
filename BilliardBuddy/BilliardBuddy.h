@@ -33,8 +33,10 @@ class BilliardBuddy
 private:
 	static bool processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, CueDetector& cueDetector, PhysicsModel& physicsModel, TextAugmentor& textAugmentor, CueAugmentor& cueAugmentor, HMDInterface& hmdIntefrace);
 	static bool pollKeyboard(bool& preprocess);
+	static int frameIterator;
 
 public:
 	static void help();
 	static void process(Settings& settings);
+	static int getFrameIterator();
 };
