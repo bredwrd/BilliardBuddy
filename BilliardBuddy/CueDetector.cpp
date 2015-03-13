@@ -124,7 +124,6 @@ void CueDetector::hsiSegment(cv::Mat& frame)
 	inRange(hsvFrame, cv::Scalar(minH, minS, minV), cv::Scalar(maxH, maxS, maxV), hsvMask);
 
 	// Upsample after hsi segmentation
-	cv::Mat upsampledFrame;
 	cv::resize(hsvMask, hsvMask, cv::Size(0, 0), HSI_SEGMENTATION_DOWNSAMPLE_FACTOR, HSI_SEGMENTATION_DOWNSAMPLE_FACTOR, cv::INTER_CUBIC);
 
 	// Used to make the mask bigger

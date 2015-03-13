@@ -50,24 +50,24 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 
 	// Red Balls
 	// Hue is on 1 - 25 and 240 - 255 (in GIMP). Use higher range for now and let morphological closing fill it in.
-	int iLowH = 169; 
-	int iHighH = 180;
-	int iLowS = 150;
+	int iLowH = 170; 
+	int iHighH = 255;
+	int iLowS = 65;
 	int iHighS = 255;
-	int iLowV = 1;
-	int iHighV = 255;
+	int iLowV = 100;
+	int iHighV = 45;
 
 	//Create binary colour segmented mask
 	cv::Mat redBallMask = hsiSegment(frame, open_size, close_size,
 		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
 
 	// White Balls
-	iLowH = 1;
-	iHighH = 96;
+	iLowH = 0;
+	iHighH = 57;
 	iLowS = 0;
-	iHighS = 70;
-	iLowV = 245;
-	iHighV = 255;
+	iHighS = 245;
+	iLowV = 0;
+	iHighV = 235;
 
 	//Create binary colour segmented mask
 	cv::Mat whiteBallMask = hsiSegment(frame, open_size, close_size,
