@@ -8,13 +8,13 @@ PocketDetector::~PocketDetector()
 {
 }
 
-cv::vector<cv::Vec2i> PocketDetector::detect(cv::Mat frame)
+cv::vector<cv::Vec2i> PocketDetector::detect(cv::Mat frame, int frameIterator)
 {
 	cv::vector<cv::Vec2i> pockets;
 	return pockets; // TODO- populate vector containing points of pockets
 }
 
-cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame)
+cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame, int frameIterator)
 {
 	//Specify opening/closing size
 	int open_size = 5;

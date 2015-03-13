@@ -18,8 +18,8 @@ private:
 
 public:
 	PocketDetector();
-	cv::vector<cv::Vec2i> detect(cv::Mat frame);
-	cv::vector<pocket> detectPockets(cv::Mat frame);
+	cv::vector<cv::Vec2i> detect(cv::Mat frame, int frameIterator);
+	cv::vector<pocket> detectPockets(cv::Mat frame, int frameIterator);
 	~PocketDetector();
 };
 

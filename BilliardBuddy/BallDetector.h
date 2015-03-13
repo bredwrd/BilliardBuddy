@@ -19,5 +19,5 @@ private:
 public:
 	BallDetector();
 	~BallDetector();
-	cv::vector<cv::Vec2i> detect(cv::Mat frame); // returns an arbitrary number of ball coordinates in viewspace
+	cv::vector<cv::Vec2i> detect(cv::Mat frame, int frameIterator); // returns an arbitrary number of ball coordinates in viewspace
 };

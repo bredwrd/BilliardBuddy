@@ -1,5 +1,8 @@
 #include "BilliardBuddy.h"
 
+int BilliardBuddy::frameIterator = 0;
+cv::vector<Vec2i> BilliardBuddy::cueCoords = cv::vector<Vec2i>(0, 0);
+
 int main(int argc, char* argv[])
 {
 		BilliardBuddy::help();
@@ -89,34 +92,50 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	}
 
 	// Detect features.
-	cv::vector<pocket> pocketPoints = poolTableDetector.detectTable(rightFrame);
+	cv::vector<pocket> pocketPoints = poolTableDetector.detectTable(rightFrame, frameIterator);
 
 	//Detect Cue
-	cv::vector<Vec2i> cue = cueDetector.detect(rightFrame);
+	if (frameIterator == 1 || frameIterator == 0)
+	{
+		cueCoords = cueDetector.detect(rightFrame, frameIterator);
+	}
 
 	//Detect White Ball
 	//TODO
 	cv::vector<Vec2i> whiteBall(1);
-	//whiteBall[0] = { 1, 1 };
+	whiteBall[0] = { 200, 100 };
 
 	//Detect other balls
 	//TODO?? Brian?
-	cv::vector<Vec2i> balls(3);
-	//balls[0] = { 3, 3 };
-	//balls[1] = { 5, 5 };
-	//balls[2] = { 7, 7 };
+	cv::vector<Vec2i> balls(2);
+	balls[0] = { 200, 140 };
+	balls[1] = { 200, 170 };
+	//balls[2] = { 150, 150 };
 
 	// Calculate Physics Model
 	cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cue, whiteBall, balls);
 
 	// Visually augment.
-	//textAugmentor.augment(rightFrame);
-	//cueAugmentor.augment(rightFrame, cue);
-
+	textAugmentor.augment(rightFrame);
+	cueAugmentor.augment(rightFrame, cueCoords);
 	hmdInterface.drawToHMD(leftFrame, rightFrame);
+
+	if (frameIterator == 7)
+	{
+		frameIterator = 1;
+	}
+	else
+	{
+		frameIterator++;
+	}
 
 	// check for errors and return false at some point
 	return true;
+}
+
+int BilliardBuddy::getFrameIterator()
+{
+	return frameIterator;
 }
 
 void BilliardBuddy::help()
