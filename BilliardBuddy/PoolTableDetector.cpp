@@ -93,8 +93,11 @@ cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, int frameI
 	}
 	imshow("Rail Edge Hough", houghMap);*/
 
-	// Expand pool edge to include some padding to contain the rail.
-	dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(50, 50)));
+	if (frameIterator == 6 || frameIterator == 0)
+	{
+		// Expand pool edge to include some padding to contain the rail.
+		dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(50, 50)));
+	}
 
 	cv::Mat maskedEdgeFrame;
 	frame.copyTo(maskedEdgeFrame, tableMask);
@@ -104,7 +107,7 @@ cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, int frameI
 	PocketDetector pocketDetector = PocketDetector();
 
 	// Run pocket detector
-	return pocketDetector.detectPockets(maskedEdgeFrame);
+	return pocketDetector.detectPockets(maskedEdgeFrame, frameIterator);
 }
 
 cv::Mat PoolTableDetector::hsiSegment(cv::Mat frame, int open_size, int close_size, int iLowH, int iLowS, int iLowV,
