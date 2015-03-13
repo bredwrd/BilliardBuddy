@@ -30,7 +30,7 @@ private:
 
 public:
 	CueDetector();
-	cv::vector<cv::Vec2i> detect(cv::Mat frame);
+	cv::vector<cv::Vec2i> detect(cv::Mat frame, int frameIterator);
 	~CueDetector();
 };
 

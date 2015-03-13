@@ -1,5 +1,8 @@
 #include "BilliardBuddy.h"
 
+int BilliardBuddy::frameIterator = 1;
+cv::vector<Vec2i> BilliardBuddy::cueCoords = cv::vector<Vec2i>(0, 0);
+
 int main(int argc, char* argv[])
 {
 		BilliardBuddy::help();
@@ -89,10 +92,13 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	}
 
 	// Detect features.
-	cv::vector<pocket> pocketPoints = poolTableDetector.detectTable(rightFrame);
+	cv::vector<pocket> pocketPoints = poolTableDetector.detectTable(rightFrame, frameIterator);
 
 	//Detect Cue
-	cv::vector<Vec2i> cue = cueDetector.detect(rightFrame);
+	if (frameIterator == 1)
+	{
+		cueCoords = cueDetector.detect(rightFrame, frameIterator);
+	}
 
 	//Detect White Ball
 	//TODO
@@ -111,12 +117,27 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	
 	// Visually augment.
 	textAugmentor.augment(rightFrame);
-	cueAugmentor.augment(rightFrame, cue);
+	cueAugmentor.augment(rightFrame, cueCoords);
 
 	hmdInterface.drawToHMD(leftFrame, rightFrame);
 
+	//
+	if (frameIterator == 5)
+	{
+		frameIterator = 1;
+	}
+	else
+	{
+		frameIterator++;
+	}
+
 	// check for errors and return false at some point
 	return true;
+}
+
+int BilliardBuddy::getFrameIterator()
+{
+	return frameIterator;
 }
 
 void BilliardBuddy::help()

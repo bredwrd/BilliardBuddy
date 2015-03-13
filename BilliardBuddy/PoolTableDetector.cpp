@@ -2,25 +2,27 @@
 
 PoolTableDetector::PoolTableDetector()
 {
+	BallDetector ballDetector = BallDetector();
+	cv::vector<cv::Vec2i> ballCoordinates = cv::vector<cv::Vec2i>();
 }
 
 PoolTableDetector::~PoolTableDetector()
 {
 }
 
-cv::vector<cv::Vec2i> PoolTableDetector::detect(cv::Mat frame)
+cv::vector<cv::Vec2i> PoolTableDetector::detect(cv::Mat frame, int frameIterator)
 {
 	cv::vector<cv::Vec2i> pockets;
 	return pockets; // TODO- populate vector containing points of pockets
 }
 
-cv::vector<pocket> PoolTableDetector::detectTable(cv::Mat frame)
+cv::vector<pocket> PoolTableDetector::detectTable(cv::Mat frame, int frameIterator)
 {
-	pockets = detectTableWithColourSegmentation(frame);
+	pockets = detectTableWithColourSegmentation(frame, frameIterator);
 	return pockets; // TODO- populate vector containing points of pockets
 }
 
-cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat& frame)
+cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat& frame, int frameIterator)
 {
 	//Can be used to control with trackbars the values
 	int iLowH = 55; //Try GIMP converting from 110 if table needs to be tightened up
@@ -33,24 +35,37 @@ cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat&
 	int iHighV = 200;
 
 	//Specify opening/closing size
-	int open_size = 16;
-	int close_size = 16;
+	int open_size = 4;
+	int close_size = 4;
 
-	cv::Mat tableMask = PoolTableDetector::hsiSegment(frame, open_size, close_size,
+	// Downsample before hsi segmentation
+	cv::Mat downsampledFrame;
+	cv::resize(frame, downsampledFrame, cv::Size(0, 0), 0.125, 0.125, cv::INTER_LINEAR);
+
+	// HSV segment
+	cv::Mat tableMask = PoolTableDetector::hsiSegment(downsampledFrame, open_size, close_size,
 		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
+
+	// Upsample after hsi segmentation
+	cv::resize(tableMask, tableMask, cv::Size(0, 0), 8, 8, cv::INTER_CUBIC);
+
+	// Morphological opening (remove small objects from the foreground)
+	erode(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(8*open_size, 8*open_size)));
+	dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16*open_size, 16*open_size)));
 
 	cv::Mat maskedFrame;
 	frame.copyTo(maskedFrame, tableMask);
-	imshow("Masked Pool Table", maskedFrame);
+	//imshow("Masked Pool Table", maskedFrame);
 
 	// Run BallDetector on masked pool table
-	BallDetector ballDetector = BallDetector();
-	ballDetector.detect(maskedFrame);
-
-	return detectTableEdge(frame, tableMask);
+	if (frameIterator == 4)
+	{
+		ballCoordinates = ballDetector.detect(maskedFrame, frameIterator);
+	}
+	return detectTableEdge(frame, tableMask, frameIterator);
 }
 
-cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& tableMask)
+cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& tableMask, int frameIterator)
 {
 	// Thin the edge of the pool table colour.
 	Canny(tableMask, tableMask, 100, 180, 3, true);
@@ -74,10 +89,10 @@ cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& t
 	frame.copyTo(maskedEdgeFrame, tableMask);
 	//imshow("Rail Edge", maskedEdgeFrame);
 
-	//Initialize Pocket Detector
+	// Initialize Pocket Detector
 	PocketDetector pocketDetector = PocketDetector();
 
-	//Run pocket detector
+	// Run pocket detector
 	return pocketDetector.detectPockets(maskedEdgeFrame);
 }
 
