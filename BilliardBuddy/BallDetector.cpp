@@ -50,24 +50,24 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 
 	// Red Balls
 	// Hue is on 1 - 25 and 240 - 255 (in GIMP). Use higher range for now and let morphological closing fill it in.
-	int iLowH = 169; 
-	int iHighH = 180;
-	int iLowS = 150;
+	int iLowH = 170; 
+	int iHighH = 255;
+	int iLowS = 65;
 	int iHighS = 255;
-	int iLowV = 1;
-	int iHighV = 255;
+	int iLowV = 100;
+	int iHighV = 45;
 
 	//Create binary colour segmented mask
 	cv::Mat redBallMask = hsiSegment(frame, open_size, close_size,
 		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
 
 	// White Balls
-	iLowH = 1;
-	iHighH = 96;
+	iLowH = 0;
+	iHighH = 57;
 	iLowS = 0;
-	iHighS = 70;
-	iLowV = 245;
-	iHighV = 255;
+	iHighS = 245;
+	iLowV = 0;
+	iHighV = 235;
 
 	//Create binary colour segmented mask
 	cv::Mat whiteBallMask = hsiSegment(frame, open_size, close_size,
@@ -77,7 +77,7 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 	cv::Mat maskedFrame;
 	cv::Mat allPocketMask = redBallMask + whiteBallMask;
 	frame.copyTo(maskedFrame, allPocketMask);
-	imshow("All Balls", maskedFrame);
+	//imshow("All Balls", maskedFrame);
 
 	// set up the parameters (check the defaults in opencv's code in blobdetector.cpp)
 	cv::SimpleBlobDetector::Params params;
@@ -118,7 +118,7 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 	cv::drawKeypoints(allPocketMask, keypoints, keypointMask, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 	cv::Mat maskedKeypointFrame;
 	frame.copyTo(maskedFrame, allPocketMask);
-	imshow("All Pockets w/ Points", keypointMask);
+	//imshow("All Pockets w/ Points", keypointMask);
 }
 
 void BallDetector::detectWithHoughCircles(cv::Mat& frame)
@@ -144,5 +144,5 @@ void BallDetector::detectWithHoughCircles(cv::Mat& frame)
 		circle(frame, center, radius, cv::Scalar(0, 0, 255), 3, 8, 0);
 	}
 
-	imshow("BallDetector", frame);
+	//imshow("BallDetector", frame);
 }

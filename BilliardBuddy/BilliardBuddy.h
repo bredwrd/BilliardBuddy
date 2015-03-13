@@ -34,6 +34,7 @@ private:
 	static bool processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, CueDetector& cueDetector, PhysicsModel& physicsModel, TextAugmentor& textAugmentor, CueAugmentor& cueAugmentor, HMDInterface& hmdIntefrace);
 	static bool pollKeyboard(bool& preprocess);
 	static int frameIterator;
+	static cv::vector<Vec2i> cueCoords;
 
 public:
 	static void help();

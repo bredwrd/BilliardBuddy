@@ -1,6 +1,7 @@
 #include "BilliardBuddy.h"
 
-int BilliardBuddy::frameIterator;
+int BilliardBuddy::frameIterator = 1;
+cv::vector<Vec2i> BilliardBuddy::cueCoords = cv::vector<Vec2i>(0, 0);
 
 int main(int argc, char* argv[])
 {
@@ -58,7 +59,6 @@ void BilliardBuddy::process(Settings& settings) {
 	HMDInterface hmdInterface = HMDInterface();
 
 	// Processing Loop
-	frameIterator = 1;
 	bool result;
 	do {
 		result = processFrame(preprocess, cameraInterface, preProcessor, poolTableDetector, cueDetector, physicsModel, textAugmentor, cueAugmentor, hmdInterface);
@@ -95,7 +95,10 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	cv::vector<pocket> pocketPoints = poolTableDetector.detectTable(rightFrame);
 
 	//Detect Cue
-	cv::vector<Vec2i> cue = cueDetector.detect(rightFrame);
+	if (frameIterator == 1)
+	{
+		cueCoords = cueDetector.detect(rightFrame);
+	}
 
 	//Detect White Ball
 	//TODO
@@ -114,12 +117,27 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 
 	// Visually augment.
 	textAugmentor.augment(rightFrame);
-	cueAugmentor.augment(rightFrame, cue);
+	cueAugmentor.augment(rightFrame, cueCoords);
 
 	hmdInterface.drawToHMD(leftFrame, rightFrame);
 
+	//
+	if (frameIterator == 5)
+	{
+		frameIterator = 1;
+	}
+	else
+	{
+		frameIterator++;
+	}
+
 	// check for errors and return false at some point
 	return true;
+}
+
+int BilliardBuddy::getFrameIterator()
+{
+	return frameIterator;
 }
 
 void BilliardBuddy::help()
@@ -128,11 +146,6 @@ void BilliardBuddy::help()
 		<< "Usage: BilliardBuddy.exe <configpath.xml>" << std::endl
 		<< "Near the sample file you'll find the configuration file, which has detailed help of "
 		"how to edit it.  It may be any OpenCV supported file format XML/YAML." << std::endl;
-}
-
-int BilliardBuddy::getFrameIterator()
-{
-	return 42;// frameIterator;
 }
 
 void read(const FileNode& node, Settings& x, const Settings& default_value = Settings())

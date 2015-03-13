@@ -4,6 +4,7 @@
 #include "PocketDetector.h"
 #include "BallDetector.h"
 #include "Pocket.h"
+#include "BilliardBuddy.h"
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -25,6 +26,8 @@ private:
 		int iHighH, int iHighS, int iHighV);
 	cv::vector<pocket> pockets;
 	static const int HSI_SEGMENTATION_DOWNSAMPLE_FACTOR = 2;
+	BallDetector ballDetector;
+	cv::vector<Vec2i> ballCoordinates;
 
 public:
 	PoolTableDetector();
