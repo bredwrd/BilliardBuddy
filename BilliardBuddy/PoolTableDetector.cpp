@@ -53,11 +53,6 @@ cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat&
 		// Upsample after hsi segmentation
 		cv::resize(tableMask, tableMask, cv::Size(0, 0), 8, 8, cv::INTER_CUBIC);
 	}
-	else 
-	{
-		PoolTableDetector::hsiSegment(downsampledFrame, open_size, close_size,
-			iLowH, iLowS, iLowV, iHighH, iHighS, iHighV, frameIterator);
-	}
 
 	if (frameIterator == 4 || frameIterator == 0)
 	{

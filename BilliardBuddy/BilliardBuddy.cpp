@@ -95,7 +95,7 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	cv::vector<pocket> pocketPoints = poolTableDetector.detectTable(rightFrame, frameIterator);
 
 	//Detect Cue
-	if (frameIterator == 1)
+	if (frameIterator == 1 || frameIterator == 0)
 	{
 		cueCoords = cueDetector.detect(rightFrame, frameIterator);
 	}
@@ -110,18 +110,16 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	cv::vector<Vec2i> balls(2);
 	balls[0] = { 200, 140 };
 	balls[1] = { 200, 170 };
-	balls[2] = { 150, 150 };
+	//balls[2] = { 150, 150 };
 
 	// Calculate Physics Model
-	cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cue, whiteBall, balls);
+	//cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cueCoords, whiteBall, balls);
 	
 	// Visually augment.
 	textAugmentor.augment(rightFrame);
 	cueAugmentor.augment(rightFrame, cueCoords);
-
 	hmdInterface.drawToHMD(leftFrame, rightFrame);
 
-	//
 	if (frameIterator == 5)
 	{
 		frameIterator = 1;
