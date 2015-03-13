@@ -3,26 +3,26 @@
 PoolTableDetector::PoolTableDetector()
 {
 	BallDetector ballDetector = BallDetector();
-	cv::vector<Vec2i> ballCoordinates = cv::vector<Vec2i>();
+	cv::vector<cv::Vec2i> ballCoordinates = cv::vector<cv::Vec2i>();
 }
 
 PoolTableDetector::~PoolTableDetector()
 {
 }
 
-cv::vector<cv::Vec2i> PoolTableDetector::detect(cv::Mat frame)
+cv::vector<cv::Vec2i> PoolTableDetector::detect(cv::Mat frame, int frameIterator)
 {
 	cv::vector<cv::Vec2i> pockets;
 	return pockets; // TODO- populate vector containing points of pockets
 }
 
-cv::vector<pocket> PoolTableDetector::detectTable(cv::Mat frame)
+cv::vector<pocket> PoolTableDetector::detectTable(cv::Mat frame, int frameIterator)
 {
-	pockets = detectTableWithColourSegmentation(frame);
+	pockets = detectTableWithColourSegmentation(frame, frameIterator);
 	return pockets; // TODO- populate vector containing points of pockets
 }
 
-cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat& frame)
+cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat& frame, int frameIterator)
 {
 	//Can be used to control with trackbars the values
 	int iLowH = 55; //Try GIMP converting from 110 if table needs to be tightened up
@@ -58,14 +58,14 @@ cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat&
 	//imshow("Masked Pool Table", maskedFrame);
 
 	// Run BallDetector on masked pool table
-	if (BilliardBuddy::getFrameIterator() == 4)
+	if (frameIterator == 4)
 	{
-		ballCoordinates = ballDetector.detect(maskedFrame);
+		ballCoordinates = ballDetector.detect(maskedFrame, frameIterator);
 	}
-	return detectTableEdge(frame, tableMask);
+	return detectTableEdge(frame, tableMask, frameIterator);
 }
 
-cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& tableMask)
+cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, cv::Mat& tableMask, int frameIterator)
 {
 	// Thin the edge of the pool table colour.
 	Canny(tableMask, tableMask, 100, 180, 3, true);

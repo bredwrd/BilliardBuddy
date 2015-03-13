@@ -9,7 +9,7 @@ CueDetector::~CueDetector()
 {
 }
 
-cv::vector<cv::Vec2i> CueDetector::detect(cv::Mat frame)
+cv::vector<cv::Vec2i> CueDetector::detect(cv::Mat frame, int frameIterator)
 {
 	// Reset cueLines.
 	cueLine[0] = cv::Vec2i(0, 0);

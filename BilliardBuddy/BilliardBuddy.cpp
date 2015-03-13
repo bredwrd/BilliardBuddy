@@ -92,12 +92,12 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	}
 
 	// Detect features.
-	cv::vector<pocket> pocketPoints = poolTableDetector.detectTable(rightFrame);
+	cv::vector<pocket> pocketPoints = poolTableDetector.detectTable(rightFrame, frameIterator);
 
 	//Detect Cue
 	if (frameIterator == 1)
 	{
-		cueCoords = cueDetector.detect(rightFrame);
+		cueCoords = cueDetector.detect(rightFrame, frameIterator);
 	}
 
 	//Detect White Ball

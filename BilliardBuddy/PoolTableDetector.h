@@ -4,7 +4,7 @@
 #include "PocketDetector.h"
 #include "BallDetector.h"
 #include "Pocket.h"
-#include "BilliardBuddy.h"
+
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -18,8 +18,8 @@ class PoolTableDetector :
 	public virtual billbud::FeatureDetector
 {
 private:
-	cv::vector<pocket> detectTableWithColourSegmentation(cv::Mat& frame);
-	cv::vector<pocket> detectTableEdge(cv::Mat& frame, cv::Mat& tableMask);
+	cv::vector<pocket> detectTableWithColourSegmentation(cv::Mat& frame, int frameIterator);
+	cv::vector<pocket> detectTableEdge(cv::Mat& frame, cv::Mat& tableMask, int frameIterator);
 	void regHoughLines(cv::Mat& view, cv::Mat& houghMap, int threshold);
 	void probHoughLines(cv::Mat& view, cv::Mat& houghMap, int threshold, int minLineLength, int maxLineGap);
 	cv::Mat hsiSegment(cv::Mat frame, int open_size, int close_size, int iLowH, int iLowS, int iLowV,
@@ -27,12 +27,12 @@ private:
 	cv::vector<pocket> pockets;
 	static const int HSI_SEGMENTATION_DOWNSAMPLE_FACTOR = 2;
 	BallDetector ballDetector;
-	cv::vector<Vec2i> ballCoordinates;
+	cv::vector<cv::Vec2i> ballCoordinates;
 
 public:
 	PoolTableDetector();
-	cv::vector<cv::Vec2i> detect(cv::Mat frame);
-	cv::vector<pocket> detectTable(cv::Mat frame);
+	cv::vector<cv::Vec2i> detect(cv::Mat frame, int frameIterator);
+	cv::vector<pocket> detectTable(cv::Mat frame, int frameIterator);
 	~PoolTableDetector();
 };
 
