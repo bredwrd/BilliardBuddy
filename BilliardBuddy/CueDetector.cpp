@@ -25,6 +25,12 @@ cv::vector<cv::Vec2i> CueDetector::detect(cv::Mat frame, int frameIterator)
 
 	cv::line(frame, cv::Point(cueLine[0][0], cueLine[0][1]), cv::Point(cueLine[1][0], cueLine[1][1]), cv::Scalar(0, 0, 255), 3, CV_AA);
 
+	// Assumption: second cueLine point is always the uppermost.
+	CueBallDetector cueBallDetector;
+	cueBallDetector.setCropX(cueLine[1][0]);
+	cueBallDetector.setCropY(cueLine[1][1]);
+	cueBallDetector.detect(frame, frameIterator);
+
 	return cueLine;
 }
 
