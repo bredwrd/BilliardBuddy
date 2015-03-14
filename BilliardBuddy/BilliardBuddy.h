@@ -27,11 +27,12 @@
 #include "TextAugmentor.h"
 #include "PhysicsModel.h"
 #include "HMDInterface.h"
+#include "TrajectoryAugmentor.h"
 
 class BilliardBuddy
 {
 private:
-	static bool processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, CueDetector& cueDetector, PhysicsModel& physicsModel, TextAugmentor& textAugmentor, CueAugmentor& cueAugmentor, HMDInterface& hmdIntefrace);
+	static bool processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, CueDetector& cueDetector, PhysicsModel& physicsModel, TextAugmentor& textAugmentor, CueAugmentor& cueAugmentor, HMDInterface& hmdIntefrace, TrajectoryAugmentor& trajectoryAugmentor);
 	static bool pollKeyboard(bool& preprocess);
 	static int frameIterator;
 	static cv::vector<Vec2i> cueCoords;

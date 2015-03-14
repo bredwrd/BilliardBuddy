@@ -5,6 +5,7 @@
 #include "opencv2/features2d/features2d.hpp"
 #include "Pocket.h"
 #include "Path.h"
+#include "PointLocator.h"
 
 //Constants for the physics calculations
 //Radius of ball in metres
@@ -23,10 +24,10 @@ const int maxCueDist = 60;
 //Maximum length of a final trajectory
 const float cutFactor = 0.25;
 //Pocket location constants
-static const cv::Vec2f PT_UR = {360, 360}; //{xRight,yBot};
-static const cv::Vec2f PT_UL = { 0, 360 }; ///{xLeft,yBot};
-static const cv::Vec2f PT_BL = { 0, 0 };   //{xLeft,yTop};
-static const cv::Vec2f PT_BR = { 360, 0 }; //{xRight, yTop};
+static const cv::Vec2f PT_UR = {xRight, yTop}; 
+static const cv::Vec2f PT_UL = {xLeft, yTop}; 
+static const cv::Vec2f PT_BL = {xLeft, -yBot};  
+static const cv::Vec2f PT_BR = {xRight, -yBot}; 
 
 class PhysicsModel
 {
@@ -40,7 +41,7 @@ private:
 	cv::Vec2f backFromBack(cv::Vec2f backPoint, cv::Vec2f ballCoord);
 public:
 	PhysicsModel();
-	void calculateTrajectories(cv::vector<Path>& trajectoryPoints, cv::vector<cv::Vec2i> cueBall, cv::vector<cv::Vec2i> targetBalls, cv::vector<cv::Vec2i> cueStick);
-	cv::vector<Path> calculate(cv::Mat frame, cv::vector<pocket> pockets, cv::vector<cv::Vec2i> cue, cv::vector<cv::Vec2i> whiteBall, cv::vector<cv::Vec2i> balls);
+	void calculateTrajectories(cv::vector<Path>& trajectoryPoints, cv::vector<cv::Vec2f> cueBall, cv::vector<cv::Vec2f> targetBalls, cv::vector<cv::Vec2f> cueStick);
+	cv::vector<Path> calculate(cv::Mat frame, cv::vector<pocket> pockets, cv::vector<cv::Vec2i> cueStick, cv::vector<cv::Vec2f> cueBall, cv::vector<cv::Vec2f> targetBalls);
 	~PhysicsModel();
 };

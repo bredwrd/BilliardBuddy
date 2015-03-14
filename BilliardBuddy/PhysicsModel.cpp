@@ -1,5 +1,7 @@
 #include "PhysicsModel.h"
 #include <cmath>
+#include <iostream>
+using namespace std;
 
 PhysicsModel::PhysicsModel()
 {
@@ -9,15 +11,19 @@ PhysicsModel::~PhysicsModel()
 {
 }
 
-cv::vector<Path> PhysicsModel::calculate(cv::Mat frame, cv::vector<pocket> pockets, cv::vector<cv::Vec2i> cue,
-	cv::vector<cv::Vec2i> whiteBall, cv::vector<cv::Vec2i> balls)
+cv::vector<Path> PhysicsModel::calculate(cv::Mat frame, cv::vector<pocket> pockets, cv::vector<cv::Vec2i> cueStick,
+	cv::vector<cv::Vec2f> cueBall, cv::vector<cv::Vec2f> targetBalls)
 {
+	
+	//Initialize path vector to be returned (trajectory points in 3D space)
+	cv::vector<Path> trajectoryPoints3D;
 	
 	//Need 4 pockets to do warp perspective transform
 	if (pockets.size() == 4){
 		cv::vector<cv::Point2f> sourcePoints(4);
 		cv::vector<cv::Point2f> destPoints(4);
 
+		//Form four corners in both the source and destination spaces
 		for (int i = 0; i < 4; i++){
 			sourcePoints[i] = cv::Point2f(pockets[i].pocketPoints.pt.x, pockets[i].pocketPoints.pt.y);
 			destPoints[i] = cv::Point2f(pockets[i].xLocation, pockets[i].yLocation);
@@ -31,51 +37,97 @@ cv::vector<Path> PhysicsModel::calculate(cv::Mat frame, cv::vector<pocket> pocke
 		//center *= (1. / sourcePoints.size());
 		//sortCorners(sourcePoints, center);
 
-		//Gets the transformation matrix
-		cv::Mat warpMatrix = cv::getPerspectiveTransform(sourcePoints, destPoints);
+		//Compute transformation matrix for 3D --> 2D and 2D --> 3D respectively
+		cv::Mat forwardMatrix = cv::getPerspectiveTransform(sourcePoints, destPoints);
+		cv::Mat backwardMatrix = cv::getPerspectiveTransform(destPoints, sourcePoints);
 
-		cv::Mat rotated;
-		cv::Size rSize = { 360, 360 };
-		//Performs the warp perspective to obtain the 2D model
-		cv::warpPerspective(frame, rotated, warpMatrix, rSize);
+		///Convert input coordinates for cue stick into floats
+		cv::vector<cv::Vec2f> cueStickf(cueStick.size());
+		cueStickf[0][0] = (float)cueStick[0][0];
+		cueStickf[0][1] = (float)cueStick[0][1];
+		cueStickf[1][0] = (float)cueStick[1][0];
+		cueStickf[1][1] = (float)cueStick[1][1];
 
-		imshow("4 Point Warped Table", rotated);
-	
-		//Initialize path vector to be returned
-		cv::vector<Path> trajectoryPoints;
+		//Initialize 2D and 3D coordinate points
+		cv::vector<cv::Point2f> cueBall2D(cueBall.size());
+		cv::vector<cv::Point2f> targetBalls2D(targetBalls.size());
+		cv::vector<cv::Point2f> cueStickf2D(cueStick.size());
+		cv::vector<cv::Point2f> cueBall3D(cueBall.size());
+		cv::vector<cv::Point2f> targetBalls3D(targetBalls.size());
+		cv::vector<cv::Point2f> cueStickf3D(cueStick.size());
+		
+		//Pass coordinates of input objects to initalized 3D points
+		cueBall3D[0] = cv::Point2f(cueBall[0][0],cueBall[0][1]);
+		cueStickf3D[0] = cv::Point2f(cueStickf[0][0],cueStickf[0][1]);
+		cueStickf3D[1] = cv::Point2f(cueStickf[1][0], cueStickf[1][1]);
+		for (int b = 0; b < targetBalls.size(); b++){
+			targetBalls3D[b] = cv::Point2f(targetBalls[b][0],targetBalls[b][1]);
+		}
 
-		//Calculates pathVector (a vector filled with start and end points for the visual augmentor)
-		calculateTrajectories(trajectoryPoints, whiteBall, balls, cue);
+		//Apply forward perspective transform on 3D points to populate the 2D points
+		cv::perspectiveTransform(cueBall3D, cueBall2D, forwardMatrix);
+		cv::perspectiveTransform(targetBalls3D, targetBalls2D, forwardMatrix);
+		cv::perspectiveTransform(cueStickf3D, cueStickf2D, forwardMatrix);
 
-		return trajectoryPoints;
+		//Convert 2D coordinates into vectors of 2D Vec2f
+		cv::vector<cv::Vec2f> cueBall2DVec(cueBall.size());
+		cv::vector<cv::Vec2f> targetBalls2DVec(targetBalls.size());
+		cv::vector<cv::Vec2f> cueStickf2DVec(cueStickf.size());
+		cueBall2DVec[0] = {cueBall2D[0].x,cueBall2D[0].y};
+		cueStickf2DVec[0] = {cueStickf2D[0].x,cueStickf2D[0].y};
+		cueStickf2DVec[1] = { cueStickf2D[1].x, cueStickf2D[1].y };
+		for (int b = 0; b < targetBalls.size(); b++){
+			targetBalls2DVec[b] = {targetBalls2D[b].x,targetBalls2D[b].y};
+		}
+
+		//cv::Mat rotated;
+		//cv::Size rSize = { 360, 360 };
+		////Performs the warp perspective to obtain the 2D model
+		//cv::warpPerspective(frame, rotated, warpMatrix, rSize);
+
+		//imshow("4 Point Warped Table", rotated);
+
+		//Given coordinates of features in 2D, calculate trajectories in 2D
+		cv::vector<Path> trajectoryPoints2D;
+		calculateTrajectories(trajectoryPoints2D, cueBall2DVec, targetBalls2DVec, cueStickf2DVec);
+
+		//Convert output 2D trajectory coordinates into points
+		cv::vector<cv::Point2f> trajectoryPoints2D_StartPoints(trajectoryPoints2D.size());
+		cv::vector<cv::Point2f> trajectoryPoints2D_EndPoints(trajectoryPoints2D.size());
+		for (int t = 0; t < trajectoryPoints2D.size(); t++){
+			cv::Vec2f tempStart = trajectoryPoints2D[t].startPoint;
+			cv::Vec2f tempEnd = trajectoryPoints2D[t].endPoint;
+			trajectoryPoints2D_StartPoints[t] = cv::Point2f(tempStart[0],tempStart[1]);
+			trajectoryPoints2D_EndPoints[t] = cv::Point2f(tempEnd[0], tempEnd[1]);
+		}
+		
+		//Transform the 2D trajectory coordinates back into the 3D space
+		cv::vector<cv::Point2f> trajectoryPoints3D_StartPoints(trajectoryPoints2D_StartPoints.size());
+		cv::vector<cv::Point2f> trajectoryPoints3D_EndPoints(trajectoryPoints2D_EndPoints.size());
+		cv::perspectiveTransform(trajectoryPoints2D_StartPoints,trajectoryPoints3D_StartPoints,backwardMatrix);
+		cv::perspectiveTransform(trajectoryPoints2D_EndPoints,trajectoryPoints3D_EndPoints,backwardMatrix);
+
+		//Convert output 3D trajectory coordinates into Path
+		cv::vector<Path> trajectoryPoints3D(trajectoryPoints2D.size());
+		for (int i = 0; i < trajectoryPoints2D.size(); i++){
+			trajectoryPoints3D[i].startPoint = { trajectoryPoints3D_StartPoints[i].x,trajectoryPoints3D_StartPoints[i].y };
+			trajectoryPoints3D[i].endPoint = { trajectoryPoints3D_EndPoints[i].x, trajectoryPoints3D_EndPoints[i].y };
+		}
 	
 	}
+
+	return trajectoryPoints3D;
 
 }
 
-void PhysicsModel::calculateTrajectories(cv::vector<Path>& trajectoryPoints, cv::vector<cv::Vec2i> cueBall, cv::vector<cv::Vec2i> targetBalls, cv::vector<cv::Vec2i> cueStick){
-	
-	//Convert input coordinates to floats (not needed if output of perspective trans are floats)
-	cv::vector<cv::Vec2f> cueBallf(cueBall.size());
-	cv::vector<cv::Vec2f> targetBallsf(targetBalls.size());
-	cv::vector<cv::Vec2f> cueStickf(cueStick.size());
-	cueBallf[0][0] = (float)cueBall[0][0];
-	cueBallf[0][1] = (float)cueBall[0][1];
-	cueStickf[0][0] = (float)cueStick[0][0];
-	cueStickf[0][1] = (float)cueStick[0][1];
-	cueStickf[1][0] = (float)cueStick[1][0];
-	cueStickf[1][1] = (float)cueStick[1][1];
-	for (int i = 0; i < targetBalls.size(); i++){
-		targetBallsf[i][0] = (float)targetBalls[i][0];
-		targetBallsf[i][1] = (float)targetBalls[i][1];
-	}
+void PhysicsModel::calculateTrajectories(cv::vector<Path>& trajectoryPoints, cv::vector<cv::Vec2f> cueBall, cv::vector<cv::Vec2f> targetBalls, cv::vector<cv::Vec2f> cueStick){
 	
 	//Check if cue stick crosses cue ball
-	cv::vector<cv::Vec2f> CueBallParams = getContactPointParams(0,cueStickf[0],cueStickf[1],cueBallf,0,cueBallRadius);
-	
+	cv::vector<cv::Vec2f> CueBallParams = getContactPointParams(0,cueStick[0],cueStick[1],cueBall,0,cueBallRadius);
+
 	//Cue stick crosses cue ball and cue stick is close enough to cue ball
-	if ((CueBallParams[0][0] == 0) && (norm(cueStickf[1],cueBallf[0]) < (float)maxCueDist)){
-		trajectoryPoints = getTrajectoryGroup(CueBallParams[1], CueBallParams[4], targetBallsf, 0);
+	if ((CueBallParams[0][0] == 0) && (norm(cueStick[1],cueBall[0]) < (float)maxCueDist)){
+		trajectoryPoints = getTrajectoryGroup(CueBallParams[1], CueBallParams[4], targetBalls, 0);
 	}
 
 	return;
@@ -277,7 +329,7 @@ cv::vector<cv::Vec2f> PhysicsModel::backPointFromLine(int featureIndex, cv::Vec2
 	float b;
 	float c;
 	float d;
-	int invert_flag;
+	int invert_flag = 0;
 
 	if (featureIndex == 0){ //two x,y coords as input
 		if (param1[0] == param2[0]){ //if slope of line is infinite, solve the inverted problem
