@@ -25,8 +25,8 @@ cv::vector<pocket> PoolTableDetector::detectTable(cv::Mat frame, int frameIterat
 cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat& frame, int frameIterator)
 {
 	//Can be used to control with trackbars the values
-	int iLowH = 55; //Try GIMP converting from 110 if table needs to be tightened up
-	int iHighH = 120; //Try GIMP converting from 150 if ^
+	int iLowH = 55;
+	int iHighH = 120;
 
 	int iLowS = 100;
 	int iHighS = 255;
@@ -42,38 +42,43 @@ cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat&
 	cv::Mat downsampledFrame;
 
 	// HSV segment
+	if (frameIterator == 2 || frameIterator == 0)
+	{
+		cv::resize(frame, downsampledFrame, cv::Size(0, 0), 1, 1, cv::INTER_LINEAR);
+		PoolTableDetector::hsiSegment(downsampledFrame, open_size, close_size,
+			iLowH, iLowS, iLowV, iHighH, iHighS, iHighV, frameIterator);
+	}
+
 	if (frameIterator == 3 || frameIterator == 0)
 	{
-		cv::resize(frame, downsampledFrame, cv::Size(0, 0), 0.125, 0.125, cv::INTER_LINEAR);
-
 		// HSV segment
 		tableMask = PoolTableDetector::hsiSegment(downsampledFrame, open_size, close_size,
 			iLowH, iLowS, iLowV, iHighH, iHighS, iHighV, frameIterator);
 
 		// Upsample after hsi segmentation
-		cv::resize(tableMask, tableMask, cv::Size(0, 0), 8, 8, cv::INTER_CUBIC);
+		cv::resize(hsiSegmentationStageTwoFrame, hsiSegmentationStageTwoFrame, cv::Size(0, 0), 1, 1, cv::INTER_CUBIC);
 	}
 
 	if (frameIterator == 4 || frameIterator == 0)
 	{
 		// Morphological opening (remove small objects from the foreground)
-		erode(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(8 * open_size, 8 * open_size)));
-		dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16 * open_size, 16 * open_size)));
+		erode(hsiSegmentationStageTwoFrame, hsiSegmentationStageTwoFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(8 * open_size, 8 * open_size)));
+		dilate(hsiSegmentationStageTwoFrame, hsiSegmentationStageTwoFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(16 * open_size, 16 * open_size)));
 	}
 
 	if (frameIterator == 5 || frameIterator == 0)
 	{
 		cv::Mat maskedFrame;
-		frame.copyTo(maskedFrame, tableMask);
+		frame.copyTo(maskedFrame, hsiSegmentationStageTwoFrame);
 		ballCoordinates = ballDetector.detect(maskedFrame, frameIterator);
 	}
 
 	if (frameIterator == 6 || frameIterator == 0)
 	{
-
+		tableEdgeResult = detectTableEdge(frame, frameIterator);
 	}
 
-	return detectTableEdge(frame, frameIterator);
+	return tableEdgeResult;
 }
 
 cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, int frameIterator)
@@ -93,14 +98,14 @@ cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, int frameI
 	}
 	imshow("Rail Edge Hough", houghMap);*/
 
-	if (frameIterator == 6 || frameIterator == 0)
-	{
+	//if (frameIterator == 6 || frameIterator == 0)
+	//{
 		// Expand pool edge to include some padding to contain the rail.
 		dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(50, 50)));
-	}
+	//}
 
 	cv::Mat maskedEdgeFrame;
-	frame.copyTo(maskedEdgeFrame, tableMask);
+	frame.copyTo(maskedEdgeFrame, hsiSegmentationStageTwoFrame);
 	//imshow("Rail Edge", maskedEdgeFrame);
 
 	// Initialize Pocket Detector

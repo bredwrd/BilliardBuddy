@@ -152,10 +152,10 @@ cv::vector<Path> PhysicsModel::getTrajectoryGroup(cv::Vec2f param1, cv::Vec2f pa
 	//float maxBranchLength = cutFactor*(abs(pockets[0].y-pockets[3].y));
 	int featureIndex = 0;
 	int branchFlag;
-	
+
 	//Calculate start and end points of trajectories
 	while ((t <= maxTotalTrajs)&&(edgeCount <= maxEdgeTrajs)){
-	
+
 		//Set start point
 		if (featureIndex == 0){
 			mainTrajectory.startPoint = param2;
@@ -487,12 +487,12 @@ cv::vector<cv::Vec2f> PhysicsModel::edgePointFromLine(int featureIndex, cv::Vec2
 		}
 		else{
 			if (norm(edgePoint1[0], param1)<norm(edgePoint2[0], param1)){
-				edgeIntPoint = edgePoint2;
-			}
-			else{
-				edgeIntPoint = edgePoint1;
-			}
+			edgeIntPoint = edgePoint2;
 		}
+		else{
+			edgeIntPoint = edgePoint1;
+		}
+	}
 	}
 
 	return edgeIntPoint;

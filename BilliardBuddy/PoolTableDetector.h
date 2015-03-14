@@ -31,6 +31,7 @@ private:
 	cv::Mat hsiSegmentationStageOneFrame;
 	cv::Mat hsiSegmentationStageTwoFrame;
 	cv::Mat tableMask;
+	cv::vector<pocket> tableEdgeResult;
 
 public:
 	PoolTableDetector();

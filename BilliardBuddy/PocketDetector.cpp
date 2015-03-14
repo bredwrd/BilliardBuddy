@@ -33,11 +33,11 @@ cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame, int frameIterato
 
 	//Orange
 	int iLowH = 4; //GIMP converted from 1
-	int iHighH = 16; //GIMP converted from 24
+	int iHighH = 13; //GIMP converted from 17
 	int iLowS = 100;
-	int iHighS = 249;
-	int iLowV = 92;
-	int iHighV = 255;
+	int iHighS = 254;
+	int iLowV = 72;
+	int iHighV = 210;
 
 	//Create binary colour segmented mask
 	cv::Mat orangePocketMask = PocketDetector::hsiSegment(frame, open_size, close_size,
@@ -55,10 +55,10 @@ cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame, int frameIterato
 	//Green
 	iLowH = 29; //GIMP converted from 41
 	iHighH = 55; //GIMP converted from 79
-	iLowS = 50;
-	iHighS = 240;
-	iLowV = 103;
-	iHighV = 255;
+	iLowS = 134;
+	iHighS = 254;
+	iLowV = 92;
+	iHighV = 206;
 
 	//Create binary colour segmented mask
 	cv::Mat greenPocketMask = PocketDetector::hsiSegment(frame, open_size, close_size,
@@ -141,6 +141,15 @@ cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame, int frameIterato
 	PointLocator pointLocator = PointLocator();
 	cv::vector<pocket> pocketPoints;
 	pocketPoints = pointLocator.infer(orangeKeyPoints, greenKeyPoints, purpleKeyPoints, pinkKeyPoints);
+
+	cv::vector<cv::KeyPoint> selectedKeyPoints(4);
+	for (int i = 0; i < pocketPoints.size(); i++){
+		selectedKeyPoints[i] = pocketPoints[i].pocketPoints;
+	}
+	cv::Mat keypointMask1;
+	cv::drawKeypoints(allPocketMask, selectedKeyPoints, keypointMask1, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+	frame.copyTo(maskedFrame, allPocketMask);
+	imshow("Matched Pockets w/ Points", keypointMask1);
 
 	return pocketPoints;
 }

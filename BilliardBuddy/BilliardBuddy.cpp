@@ -118,7 +118,7 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	//Calculate Physics Model
 	cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cueCoords, whiteBall, balls);
 
-	// Visually augment
+	//Visually Augment
 	trajectoryAugmentor.augment(rightFrame, pathVector);
 	textAugmentor.augment(rightFrame);
 	cueAugmentor.augment(rightFrame, cueCoords);
