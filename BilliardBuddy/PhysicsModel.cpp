@@ -125,37 +125,37 @@ cv::vector<Path> PhysicsModel::calculate(cv::Mat frame, cv::vector<pocket> pocke
 		//	cout << trajectoryPoints2D[i].endPoint << endl;
 		//}
 
-		//if (inversetrans_flag == 1){
-		//	//Convert output 2D trajectory coordinates into points
-		//	cv::vector<cv::Point2f> trajectoryPoints2D_StartPoints(trajectoryPoints2D.size());
-		//	cv::vector<cv::Point2f> trajectoryPoints2D_EndPoints(trajectoryPoints2D.size());
-		//	for (int t = 0; t < trajectoryPoints2D.size(); t++){
-		//		cv::Vec2f tempStart = trajectoryPoints2D[t].startPoint;
-		//		cv::Vec2f tempEnd = trajectoryPoints2D[t].endPoint;
-		//		trajectoryPoints2D_StartPoints[t] = cv::Point2f(tempStart[0], tempStart[1]);
-		//		trajectoryPoints2D_EndPoints[t] = cv::Point2f(tempEnd[0], tempEnd[1]);
-		//	}
+		//Convert output 2D trajectory coordinates into points
+		cv::vector<cv::Point2f> trajectoryPoints2D_StartPoints(trajectoryPoints2D.size());
+		cv::vector<cv::Point2f> trajectoryPoints2D_EndPoints(trajectoryPoints2D.size());
+		for (int t = 0; t < trajectoryPoints2D.size(); t++){
+			cv::Vec2f tempStart = trajectoryPoints2D[t].startPoint;
+			cv::Vec2f tempEnd = trajectoryPoints2D[t].endPoint;
+			trajectoryPoints2D_StartPoints[t] = cv::Point2f(tempStart[0], tempStart[1]);
+			trajectoryPoints2D_EndPoints[t] = cv::Point2f(tempEnd[0], tempEnd[1]);
+		}
 
-		//	//Transform the 2D trajectory coordinates back into the 3D space
-		//	cv::vector<cv::Point2f> trajectoryPoints3D_StartPoints(trajectoryPoints2D_StartPoints.size());
-		//	cv::vector<cv::Point2f> trajectoryPoints3D_EndPoints(trajectoryPoints2D_EndPoints.size());
-		//	cv::perspectiveTransform(trajectoryPoints2D_StartPoints, trajectoryPoints3D_StartPoints, backwardMatrix);
-		//	cv::perspectiveTransform(trajectoryPoints2D_EndPoints, trajectoryPoints3D_EndPoints, backwardMatrix);
+		//Transform the 2D trajectory coordinates back into the 3D space
+		cv::vector<cv::Point2f> trajectoryPoints3D_StartPoints(trajectoryPoints2D_StartPoints.size());
+		cv::vector<cv::Point2f> trajectoryPoints3D_EndPoints(trajectoryPoints2D_EndPoints.size());
+		if (trajectoryPoints2D_StartPoints.size()!=0){
+			cv::perspectiveTransform(trajectoryPoints2D_StartPoints, trajectoryPoints3D_StartPoints, backwardMatrix);
+			cv::perspectiveTransform(trajectoryPoints2D_EndPoints, trajectoryPoints3D_EndPoints, backwardMatrix);
 
-		//	//Convert output 3D trajectory coordinates into Path
-		//	cv::vector<Path> trajectoryPoints3D(trajectoryPoints2D.size());
-		//	for (int i = 0; i < trajectoryPoints2D.size(); i++){
-		//		trajectoryPoints3D[i].startPoint = { trajectoryPoints3D_StartPoints[i].x, trajectoryPoints3D_StartPoints[i].y };
-		//		trajectoryPoints3D[i].endPoint = { trajectoryPoints3D_EndPoints[i].x, trajectoryPoints3D_EndPoints[i].y };
-		//	}
+			for (int y = 0; y < trajectoryPoints3D_StartPoints.size(); y++){
+				cout << trajectoryPoints3D_StartPoints[y].x << endl;
+				cout << trajectoryPoints3D_EndPoints[y].x << endl;
+			}
 
-		//	for (int i = 0; i < trajectoryPoints3D.size(); i++){
-		//		cout << "trajectory points 3D " << i << endl;
-		//		cout << trajectoryPoints3D[i].startPoint << endl;
-		//		cout << trajectoryPoints3D[i].endPoint << endl;
-		//	}
+			//Convert output 3D trajectory coordinates into Path
+			//cv::vector<Path> trajectoryPoints3D(trajectoryPoints3D.size());
+			for (int i = 0; i < trajectoryPoints3D_StartPoints.size(); i++){
+				trajectoryPoints3D.push_back({ 0, 0 });
+				trajectoryPoints3D[i].startPoint = { trajectoryPoints3D_StartPoints[i].x, trajectoryPoints3D_StartPoints[i].y };
+				trajectoryPoints3D[i].endPoint = { trajectoryPoints3D_EndPoints[i].x, trajectoryPoints3D_EndPoints[i].y };
+			}
 
-		//}
+		}
 	
 	}
 
