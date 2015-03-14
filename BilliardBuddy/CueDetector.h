@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FeatureDetector.h"
+#include "CueBallDetector.h"
 #include <iostream>
 #include <stdio.h>
 

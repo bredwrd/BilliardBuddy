@@ -15,7 +15,6 @@ cv::vector<cv::Vec2i> BallDetector::detect(cv::Mat frame, int frameIterator)
 	// Reset cueLines.
 	ballCoordinates.clear();
 
-	imshow("Debug frame1", frame);
 	//detectWithHoughCircles(frame);
 	detectWithBlobDetector(frame);
 

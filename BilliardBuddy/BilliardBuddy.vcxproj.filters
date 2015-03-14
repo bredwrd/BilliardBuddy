@@ -66,7 +66,7 @@
     <ClCompile Include="Path.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TrajectoryAugmentor.cpp">
+    <ClCompile Include="CueBallDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -127,7 +127,7 @@
     <ClInclude Include="Path.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TrajectoryAugmentor.h">
+    <ClInclude Include="CueBallDetector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
