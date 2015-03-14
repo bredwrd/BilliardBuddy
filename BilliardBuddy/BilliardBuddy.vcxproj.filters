@@ -66,6 +66,9 @@
     <ClCompile Include="Path.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TrajectoryAugmentor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="Logitech_C310_wide_angle_calibration.xml">
@@ -122,6 +125,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Path.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TrajectoryAugmentor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
