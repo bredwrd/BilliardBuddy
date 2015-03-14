@@ -10,24 +10,24 @@
 //Constants for the physics calculations
 //Radius of ball in metres
 //NOTE: TODO - Our snooker balls are smaller than the cue ball. We will have to obtain accurate measurements for these.
-static const float ballRadius = 8;//0.028575;
+static const float ballRadius = 8.4375;//0.028575;
 //Radius of cue ball in metres
-static const float cueBallRadius = 8;//0.028575;
+static const float cueBallRadius = 8.4375;//0.028575;
 //Radius of pockets
 const float pocketRadius = 11;
 //Maximum number of trajectories drawn in one trajectory family
-const int maxTotalTrajs = 5;
+const int maxTotalTrajs = 3;
 //Maximum number of edge trajectories drawn 
-const int maxEdgeTrajs = 2;
+const int maxEdgeTrajs = 0;
 //Maximum distance between cue stick and cue ball for cue ball to be crossed
-const int maxCueDist = 60;
+const int maxCueDist = 100;
 //Maximum length of a final trajectory
 const float cutFactor = 0.25;
 //Pocket location constants
-static const cv::Vec2f PT_UR = {xRight, yTop}; 
-static const cv::Vec2f PT_UL = {xLeft, yTop}; 
-static const cv::Vec2f PT_BL = {xLeft, -yBot};  
-static const cv::Vec2f PT_BR = {xRight, -yBot}; 
+static const cv::Vec2f PT_UR = { 360, 360 };//{xRight, yTop}; 
+static const cv::Vec2f PT_UL = { 0, 360 };//{xLeft, yTop}; 
+static const cv::Vec2f PT_BL = { 0, 0 };//{xLeft, -yBot};  
+static const cv::Vec2f PT_BR = { 360, 0 };//{xRight, -yBot}; 
 
 class PhysicsModel
 {

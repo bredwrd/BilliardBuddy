@@ -1,6 +1,4 @@
 #include "BilliardBuddy.h"
-#include <iostream>
-using namespace std;
 
 int BilliardBuddy::frameIterator = 0;
 cv::vector<Vec2i> BilliardBuddy::cueCoords = cv::vector<Vec2i>(0, 0);
@@ -119,7 +117,7 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cueCoords, whiteBall, balls);
 
 	//Visually Augment
-	trajectoryAugmentor.augment(rightFrame, pathVector);
+	//trajectoryAugmentor.augment(rightFrame, pathVector);
 	textAugmentor.augment(rightFrame);
 	cueAugmentor.augment(rightFrame, cueCoords);
 	hmdInterface.drawToHMD(leftFrame, rightFrame);
