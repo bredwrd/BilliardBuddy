@@ -99,6 +99,9 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 			}
 		}
 
+		//Removes pink keypoint candidate which is between green pockets. (Co-linear)
+		removePinkCandidate(pinkKeyPoints, pockets[0], pockets[1]);
+
 		//Puts the pockets destination locations in since top left pocket will always be pockets[0]
 		pockets[0].xLocation = xLeft;
 		pockets[0].yLocation = yTop;
@@ -154,6 +157,21 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 		realPocketCount++;
 	}
 
+	//Removes pink candidates between green and orange and pink pockets
+	//TODO
+	if (greenKeyPoints.size() == 2){
+		if (orangeKeyPoints.size() > 0){
+		}
+		if (purpleKeyPoints.size() > 0){
+		}
+	}
+	else if (greenKeyPoints.size() == 1){
+		if (orangeKeyPoints.size() > 0){
+		}
+		if (purpleKeyPoints.size() > 0){
+		}
+	}
+	
 	//Use the pink marker furthest to the left
 	if (pocketCount == 2 || pocketCount == 3){
 		//Determine which pink side marker is being used.
@@ -168,10 +186,12 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 				min = i;
 			}
 		}
-		pockets[pocketCount].pocketPoints = pinkKeyPoints[min];
-		pockets[pocketCount].xLocation = xLeft;
-		pockets[pocketCount].yLocation = yMidTop;
-		pocketCount++;
+		if (!pinkKeyPoints.empty()){
+			pockets[pocketCount].pocketPoints = pinkKeyPoints[min];
+			pockets[pocketCount].xLocation = xLeft;
+			pockets[pocketCount].yLocation = yMidTop;
+			pocketCount++;
+		}
 	}
 
 	//If 2 or 3 pockets are picked up, use any pink side marker
@@ -210,7 +230,10 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 			}
 			pockets[pocketCount].pocketPoints = pinkKeyPoints[max];
 			//Remove pink Keypoint so it doesn't get used as 4th point in the transform.
-			pinkKeyPoints.erase(pinkKeyPoints.begin() + max);
+
+			if (!pinkKeyPoints.empty()){
+				pinkKeyPoints.erase(pinkKeyPoints.begin() + max, pinkKeyPoints.begin() + max + 1);
+			}
 			pocketCount++;
 			//Need to determine coordinates for point in perspective transform
 			addNonLinearPointLocation(pockets);
@@ -231,7 +254,10 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 				min = i;
 			}
 			pockets[pocketCount].pocketPoints = pinkKeyPoints[min];
-			pinkKeyPoints.erase(pinkKeyPoints.begin() + min);
+
+			if (!pinkKeyPoints.empty()){
+				pinkKeyPoints.erase(pinkKeyPoints.begin() + min);
+			}
 			//Need to determine coordinates for point in perspective transform
 			//First calculate distance from both known pocket points
 			float distToPocket0 = distBetweenKeyPoints(pockets[0].pocketPoints, pockets[pocketCount - 1].pocketPoints);
@@ -291,7 +317,10 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 
 				}
 				pockets[pocketCount] = pinkKeyPoints(i);
-				pinkKeyPoints.erase(pinkKeyPoints.begin() + i);
+
+				if (!pinkKeyPoints.empty()){
+					pinkKeyPoints.erase(pinkKeyPoints.begin() + i);
+				}
 				pocketCount++;
 			}
 		}
@@ -336,6 +365,26 @@ float PointLocator::distBetweenKeyPoints(cv::KeyPoint point1, cv::KeyPoint point
 //Adds perspective transform destination location to nonlinear pink marker point
 void PointLocator::addNonLinearPointLocation(cv::vector<pocket> &pockets){
 	//TODO
+}
+
+//Remove pink pocket from vector that is between 2 green points.
+void PointLocator::removePinkCandidate(cv::vector<cv::KeyPoint> &pinkKeyPoints, pocket firstPocket, pocket secondPocket){
+	//First check that there are actually pink pocket points
+	if (!pinkKeyPoints.empty()){
+		float distance = -1;
+		int min = 0;
+		cv::KeyPoint middlePoint;
+		middlePoint.pt.x = (firstPocket.pocketPoints.pt.x + secondPocket.pocketPoints.pt.x) / 2;
+		middlePoint.pt.y = (firstPocket.pocketPoints.pt.y + secondPocket.pocketPoints.pt.y) / 2;
+		for (int i = 0; i < pinkKeyPoints.size(); i++){
+			float newDistance = distBetweenKeyPoints(pinkKeyPoints[i], middlePoint);
+			if ((distance + 1) < epsilon || newDistance < distance){
+				distance = newDistance;
+				min = i;
+			}
+		}
+		pinkKeyPoints.erase(pinkKeyPoints.begin() + min, pinkKeyPoints.begin() + min + 1);
+	}
 }
 
 //Last point to be added will be co-linear with first two pockets.
