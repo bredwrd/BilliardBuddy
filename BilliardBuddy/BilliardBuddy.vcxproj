@@ -144,6 +144,7 @@
     <ClCompile Include="CueAugmentor.cpp" />
     <ClCompile Include="HMDInterface.cpp" />
     <ClCompile Include="TextAugmentor.cpp" />
+    <ClCompile Include="TrajectoryAugmentor.cpp" />
     <ClCompile Include="VisualAugmentor.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -168,6 +169,7 @@
     <ClInclude Include="PreProcessor.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="TextAugmentor.h" />
+    <ClInclude Include="TrajectoryAugmentor.h" />
     <ClInclude Include="VisualAugmentor.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

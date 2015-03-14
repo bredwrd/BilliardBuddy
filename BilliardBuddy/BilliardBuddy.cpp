@@ -1,4 +1,6 @@
 #include "BilliardBuddy.h"
+#include <iostream>
+using namespace std;
 
 int BilliardBuddy::frameIterator = 0;
 cv::vector<Vec2i> BilliardBuddy::cueCoords = cv::vector<Vec2i>(0, 0);
@@ -52,6 +54,7 @@ void BilliardBuddy::process(Settings& settings) {
 	PhysicsModel physicsModel = PhysicsModel();
 
 	// Initialize Visual Augmentors
+	TrajectoryAugmentor trajectoryAugmentor = TrajectoryAugmentor();
 	TextAugmentor textAugmentor = TextAugmentor();
 	CueAugmentor cueAugmentor = CueAugmentor();
 
@@ -61,7 +64,7 @@ void BilliardBuddy::process(Settings& settings) {
 	// Processing Loop
 	bool result;
 	do {
-		result = processFrame(preprocess, cameraInterface, preProcessor, poolTableDetector, cueDetector, physicsModel, textAugmentor, cueAugmentor, hmdInterface);
+		result = processFrame(preprocess, cameraInterface, preProcessor, poolTableDetector, cueDetector, physicsModel, textAugmentor, cueAugmentor, hmdInterface, trajectoryAugmentor);
 		result = pollKeyboard(preprocess);
 	} while (result == true);
 }
@@ -79,7 +82,7 @@ bool BilliardBuddy::pollKeyboard(bool& preprocess)
 	return true;
 }
 
-bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, CueDetector& cueDetector, PhysicsModel& physicsModel, TextAugmentor& textAugmentor, CueAugmentor& cueAugmentor, HMDInterface& hmdInterface) {
+bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterface, PreProcessor& preProcessor, PoolTableDetector& poolTableDetector, CueDetector& cueDetector, PhysicsModel& physicsModel, TextAugmentor& textAugmentor, CueAugmentor& cueAugmentor, HMDInterface& hmdInterface, TrajectoryAugmentor& trajectoryAugmentor) {
 	// Fetch feed from camera interface.
 	Mat leftFrame, rightFrame;
 	cameraInterface.getFrames(leftFrame, rightFrame);
@@ -102,20 +105,21 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 
 	//Detect White Ball
 	//TODO
-	cv::vector<Vec2i> whiteBall(1);
+	cv::vector<Vec2f> whiteBall(1);
 	whiteBall[0] = { 200, 100 };
 
 	//Detect other balls
 	//TODO?? Brian?
-	cv::vector<Vec2i> balls(2);
+	cv::vector<Vec2f> balls(2);
 	balls[0] = { 200, 140 };
 	balls[1] = { 200, 170 };
 	//balls[2] = { 150, 150 };
-
-	// Calculate Physics Model
-	//cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cueCoords, whiteBall, balls);
 	
-	// Visually augment.
+	//Calculate Physics Model
+	cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cueCoords, whiteBall, balls);
+
+	// Visually augment
+	trajectoryAugmentor.augment(rightFrame, pathVector);
 	textAugmentor.augment(rightFrame);
 	cueAugmentor.augment(rightFrame, cueCoords);
 	hmdInterface.drawToHMD(leftFrame, rightFrame);
