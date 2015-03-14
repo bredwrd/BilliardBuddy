@@ -75,10 +75,10 @@ cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat&
 
 	if (frameIterator == 6 || frameIterator == 0)
 	{
-
+		tableEdgeResult = detectTableEdge(frame, frameIterator);
 	}
 
-	return detectTableEdge(frame, frameIterator);
+	return tableEdgeResult;
 }
 
 cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, int frameIterator)
