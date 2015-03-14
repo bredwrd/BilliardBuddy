@@ -44,7 +44,7 @@ cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat&
 	// HSV segment
 	if (frameIterator == 2 || frameIterator == 0)
 	{
-		cv::resize(frame, downsampledFrame, cv::Size(0, 0), 0.125, 0.125, cv::INTER_LINEAR);
+		cv::resize(frame, downsampledFrame, cv::Size(0, 0), 1, 1, cv::INTER_LINEAR);
 		PoolTableDetector::hsiSegment(downsampledFrame, open_size, close_size,
 			iLowH, iLowS, iLowV, iHighH, iHighS, iHighV, frameIterator);
 	}
@@ -56,7 +56,7 @@ cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat&
 			iLowH, iLowS, iLowV, iHighH, iHighS, iHighV, frameIterator);
 
 		// Upsample after hsi segmentation
-		cv::resize(hsiSegmentationStageTwoFrame, hsiSegmentationStageTwoFrame, cv::Size(0, 0), 8, 8, cv::INTER_CUBIC);
+		cv::resize(hsiSegmentationStageTwoFrame, hsiSegmentationStageTwoFrame, cv::Size(0, 0), 1, 1, cv::INTER_CUBIC);
 	}
 
 	if (frameIterator == 4 || frameIterator == 0)
@@ -98,11 +98,11 @@ cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, int frameI
 	}
 	imshow("Rail Edge Hough", houghMap);*/
 
-	if (frameIterator == 6 || frameIterator == 0)
-	{
+	//if (frameIterator == 6 || frameIterator == 0)
+	//{
 		// Expand pool edge to include some padding to contain the rail.
 		dilate(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(50, 50)));
-	}
+	//}
 
 	cv::Mat maskedEdgeFrame;
 	frame.copyTo(maskedEdgeFrame, hsiSegmentationStageTwoFrame);

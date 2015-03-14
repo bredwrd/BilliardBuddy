@@ -39,7 +39,7 @@ cv::vector<Path> PhysicsModel::calculate(cv::Mat frame, cv::vector<pocket> pocke
 		//Performs the warp perspective to obtain the 2D model
 		cv::warpPerspective(frame, rotated, warpMatrix, rSize);
 
-		//imshow("4 Point Warped Table", rotated);
+		imshow("4 Point Warped Table", rotated);
 	
 		//Initialize path vector to be returned
 		cv::vector<Path> trajectoryPoints;
