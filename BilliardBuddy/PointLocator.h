@@ -6,6 +6,7 @@
 #include "Pocket.h"
 #include <math.h>
 #include <float.h>
+#include <iostream>
 
 //Coordinates for Model
 static const float xLeft = 0;
@@ -31,6 +32,7 @@ private:
 	float distBetweenKeyPoints(cv::KeyPoint point1, cv::KeyPoint point2);
 	void addNonLinearPointLocation(cv::vector<pocket> &pockets);
 	void addLastPointLocation(cv::vector<pocket> &pockets, int pocketCount);
+	void removePinkCandidate(cv::vector<cv::KeyPoint> &pinkKeyPoints, pocket firstPocket, pocket secondPocket);
 
 public:
 	PointLocator();
