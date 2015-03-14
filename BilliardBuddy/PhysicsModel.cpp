@@ -142,11 +142,6 @@ cv::vector<Path> PhysicsModel::calculate(cv::Mat frame, cv::vector<pocket> pocke
 			cv::perspectiveTransform(trajectoryPoints2D_StartPoints, trajectoryPoints3D_StartPoints, backwardMatrix);
 			cv::perspectiveTransform(trajectoryPoints2D_EndPoints, trajectoryPoints3D_EndPoints, backwardMatrix);
 
-			for (int y = 0; y < trajectoryPoints3D_StartPoints.size(); y++){
-				cout << trajectoryPoints3D_StartPoints[y].x << endl;
-				cout << trajectoryPoints3D_EndPoints[y].x << endl;
-			}
-
 			//Convert output 3D trajectory coordinates into Path
 			//cv::vector<Path> trajectoryPoints3D(trajectoryPoints3D.size());
 			for (int i = 0; i < trajectoryPoints3D_StartPoints.size(); i++){
