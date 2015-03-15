@@ -31,7 +31,6 @@ cv::vector<pocket> PointLocator::infer(cv::vector<cv::KeyPoint> orangeKeyPoints,
 	if (pinkKeyPoints.size() > 3){
 		pinkKeyPoints.erase(pinkKeyPoints.begin() + 3, pinkKeyPoints.end());
 	}
-
 	//Returns a vector of pocket type
 	pockets = labelPockets(orangeKeyPoints, greenKeyPoints, purpleKeyPoints, pinkKeyPoints);
 
@@ -44,6 +43,9 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 	cv::vector<pocket> pockets(4);
 	int pocketCount = 0;
 	int realPocketCount = 0;
+	bool pinkTop = true;
+	bool pinkLeft = true;
+	bool pinkRight = true;
 
 	//Select green pockets: Case 1: 2 green pockets in view
 	if (greenKeyPoints.size() == 2){
@@ -100,7 +102,8 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 		}
 
 		//Removes pink keypoint candidate which is between green pockets. (Co-linear)
-		removePinkCandidate(pinkKeyPoints, pockets[0], pockets[1]);
+		removePinkCandidate(pinkKeyPoints, pockets[0].pocketPoints, pockets[1].pocketPoints);
+		pinkTop = false;
 
 		//Puts the pockets destination locations in since top left pocket will always be pockets[0]
 		pockets[0].xLocation = xLeft;
@@ -158,22 +161,80 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 	}
 
 	//Removes pink candidates between green and orange and pink pockets
-	//TODO
 	if (greenKeyPoints.size() == 2){
 		if (orangeKeyPoints.size() > 0){
+			removePinkCandidate(pinkKeyPoints, pockets[1].pocketPoints, orangeKeyPoints[0]);
+			pinkRight = false;
 		}
 		if (purpleKeyPoints.size() > 0){
+			removePinkCandidate(pinkKeyPoints, pockets[0].pocketPoints, purpleKeyPoints[0]);
+			pinkLeft = false;
 		}
 	}
 	else if (greenKeyPoints.size() == 1){
-		if (orangeKeyPoints.size() > 0){
+		int removeLocation = 0;
+		if (orangeKeyPoints.size() > 0 && purpleKeyPoints.size() > 0){
+			float distToOrange = distBetweenKeyPoints(orangeKeyPoints[0], pockets[0].pocketPoints);
+			float distToPurple = distBetweenKeyPoints(purpleKeyPoints[0], pockets[0].pocketPoints);
+			if (distToOrange > distToPurple){
+				removeLocation = 2;
+			}
+			else{
+				removeLocation = 1;
+			}
 		}
-		if (purpleKeyPoints.size() > 0){
+		else if (orangeKeyPoints.size() > 0 && (removeLocation == 0 || removeLocation == 1)){
+			removePinkCandidate(pinkKeyPoints, pockets[0].pocketPoints, orangeKeyPoints[0]);
+			pinkRight = false;
+		}
+		if (purpleKeyPoints.size() > 0 && (removeLocation == 0 || removeLocation == 2)){
+			removePinkCandidate(pinkKeyPoints, pockets[0].pocketPoints, purpleKeyPoints[0]);
+			pinkLeft = false;
 		}
 	}
 	
+
+	//Adds pink pockets to list of pockets based on other pockets identified.
+	while (!pinkKeyPoints.empty() && pockets[3].xLocation == NULL && pocketCount < 4){
+		//Find the pink marker closest to the first pocket in list.
+		//It is structured so this is always the right marker to choose because of elimination of markers from candidate list.
+		float distance = -1;
+		int min = 0;
+		for (int i = 0; i < pinkKeyPoints.size(); i++){
+			float newDistance = distBetweenKeyPoints(pinkKeyPoints[i], pockets[0].pocketPoints);
+			if ((distance + 1) < epsilon || newDistance < distance){
+				distance = newDistance;
+				min = i;
+			}
+		}
+		pockets[pocketCount].pocketPoints = pinkKeyPoints[min];
+
+		//
+		if (pinkTop){
+			pockets[pocketCount].xLocation = xMid;
+			pockets[pocketCount].yLocation = yTop;
+			pocketCount++;
+			pinkTop = false;
+		}
+		else if (pinkLeft){
+			pockets[pocketCount].xLocation = xLeft;
+			pockets[pocketCount].yLocation = yMidTop;
+			pocketCount++;
+			pinkLeft = false;
+		}
+		else if (pinkRight){
+			pockets[pocketCount].xLocation = xRight;
+			pockets[pocketCount].yLocation = yMidTop;
+			pocketCount++;
+			pinkRight = false;
+		}
+
+		//Remove pink marker from candidate list
+		pinkKeyPoints.erase(pinkKeyPoints.begin() + min, pinkKeyPoints.begin() + min + 1);
+	}
+
 	//Use the pink marker furthest to the left
-	if (pocketCount == 2 || pocketCount == 3){
+	/*if ((pocketCount == 2 || pocketCount == 3) && !pinkKeyPoints.empty()){
 		//Determine which pink side marker is being used.
 		//Should be marker closest along line between first two pockets.
 		float distance = -1;
@@ -186,13 +247,12 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 				min = i;
 			}
 		}
-		if (!pinkKeyPoints.empty()){
-			pockets[pocketCount].pocketPoints = pinkKeyPoints[min];
-			pockets[pocketCount].xLocation = xLeft;
-			pockets[pocketCount].yLocation = yMidTop;
-			pocketCount++;
-		}
-	}
+		pockets[pocketCount].pocketPoints = pinkKeyPoints[min];
+		pockets[pocketCount].xLocation = xLeft;
+		pockets[pocketCount].yLocation = yMidTop;
+		pinkKeyPoints.erase(pinkKeyPoints.begin() + min, pinkKeyPoints.begin() + min + 1);
+		pocketCount++;
+	}*/
 
 	//If 2 or 3 pockets are picked up, use any pink side marker
 	/*if (pocketCount == 2 || pocketCount == 3){
@@ -362,20 +422,15 @@ float PointLocator::distBetweenKeyPoints(cv::KeyPoint point1, cv::KeyPoint point
 	return distance;
 }
 
-//Adds perspective transform destination location to nonlinear pink marker point
-void PointLocator::addNonLinearPointLocation(cv::vector<pocket> &pockets){
-	//TODO
-}
-
 //Remove pink pocket from vector that is between 2 green points.
-void PointLocator::removePinkCandidate(cv::vector<cv::KeyPoint> &pinkKeyPoints, pocket firstPocket, pocket secondPocket){
+void PointLocator::removePinkCandidate(cv::vector<cv::KeyPoint> &pinkKeyPoints, cv::KeyPoint firstPocket, cv::KeyPoint secondPocket){
 	//First check that there are actually pink pocket points
 	if (!pinkKeyPoints.empty()){
 		float distance = -1;
 		int min = 0;
 		cv::KeyPoint middlePoint;
-		middlePoint.pt.x = (firstPocket.pocketPoints.pt.x + secondPocket.pocketPoints.pt.x) / 2;
-		middlePoint.pt.y = (firstPocket.pocketPoints.pt.y + secondPocket.pocketPoints.pt.y) / 2;
+		middlePoint.pt.x = (firstPocket.pt.x + secondPocket.pt.x) / 2;
+		middlePoint.pt.y = (firstPocket.pt.y + secondPocket.pt.y) / 2;
 		for (int i = 0; i < pinkKeyPoints.size(); i++){
 			float newDistance = distBetweenKeyPoints(pinkKeyPoints[i], middlePoint);
 			if ((distance + 1) < epsilon || newDistance < distance){

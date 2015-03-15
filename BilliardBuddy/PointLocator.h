@@ -32,7 +32,7 @@ private:
 	float distBetweenKeyPoints(cv::KeyPoint point1, cv::KeyPoint point2);
 	void addNonLinearPointLocation(cv::vector<pocket> &pockets);
 	void addLastPointLocation(cv::vector<pocket> &pockets, int pocketCount);
-	void removePinkCandidate(cv::vector<cv::KeyPoint> &pinkKeyPoints, pocket firstPocket, pocket secondPocket);
+	void removePinkCandidate(cv::vector<cv::KeyPoint> &pinkKeyPoints, cv::KeyPoint firstPocket, cv::KeyPoint secondPocket);
 
 public:
 	PointLocator();
