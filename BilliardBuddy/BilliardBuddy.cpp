@@ -97,6 +97,9 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	// Detect features.
 	cv::vector<pocket> pocketPoints = poolTableDetector.detectTable(rightFrame, frameIterator);
 
+	// Find target pocket location
+	cv::Point2f targetPocket = getTargetPocket(pocketPoints, float(360), float(0));
+
 	//Detect Cue
 	if (frameIterator == 1 || frameIterator == 0)
 	{
@@ -161,4 +164,25 @@ void read(const FileNode& node, Settings& x, const Settings& default_value = Set
 		x = default_value;
 	else
 		x.read(node);
+}
+
+//Returns target pocket 3D coordinates given specified 2D coordinates (See physics model or point locator for 2D coordinates)
+cv::Point2f BilliardBuddy::getTargetPocket(cv::vector<pocket> pockets, float xDestination, float yDestination){
+	//Initializes targetPocket default
+	cv::Point2f targetPocket;
+	targetPocket.x = float(0);
+	targetPocket.y = float(0);
+
+	//Sets epsilon value for comparing floats
+	float epsilon = float(0.05);
+
+	//Loops through all pockets to check if they have destination points specified
+	for (int i = 0; i < pockets.size(); i++){
+		if (abs(pockets[i].xLocation - xDestination) < epsilon && abs(pockets[i].yLocation - yDestination) < epsilon){
+			targetPocket.x = pockets[i].pocketPoints.pt.x;
+			targetPocket.y = pockets[i].pocketPoints.pt.y;
+		}
+	}
+
+	return targetPocket;
 }

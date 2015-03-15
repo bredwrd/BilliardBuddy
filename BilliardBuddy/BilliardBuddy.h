@@ -36,6 +36,7 @@ private:
 	static bool pollKeyboard(bool& preprocess);
 	static int frameIterator;
 	static cv::vector<Vec2i> cueCoords;
+	static cv::Point2f getTargetPocket(cv::vector<pocket> pockets, float xDestination, float yDestination);
 
 public:
 	static void help();
