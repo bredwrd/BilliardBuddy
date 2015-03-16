@@ -4,6 +4,7 @@
 #include "PocketDetector.h"
 #include "BallDetector.h"
 #include "Pocket.h"
+#include "CueBallDetector.h"
 
 
 #include <opencv2/imgproc/imgproc.hpp>
@@ -27,16 +28,19 @@ private:
 	cv::vector<pocket> pockets;
 	static const int HSI_SEGMENTATION_DOWNSAMPLE_FACTOR = 2;
 	BallDetector ballDetector;
+	CueBallDetector cueBallDetector;
 	cv::vector<cv::Vec2i> ballCoordinates;
 	cv::Mat hsiSegmentationStageOneFrame;
 	cv::Mat hsiSegmentationStageTwoFrame;
 	cv::Mat tableMask;
 	cv::vector<pocket> tableEdgeResult;
+	cv::Mat cueMask;
 
 public:
 	PoolTableDetector();
 	cv::vector<cv::Vec2i> detect(cv::Mat frame, int frameIterator);
 	cv::vector<pocket> detectTable(cv::Mat frame, int frameIterator);
 	~PoolTableDetector();
+	void setCueMask(cv::Mat& mask);
 };
 

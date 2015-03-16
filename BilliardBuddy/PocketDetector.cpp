@@ -54,11 +54,11 @@ cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame, int frameIterato
 
 	//Green
 	iLowH = 29; //GIMP converted from 41
-	iHighH = 55; //GIMP converted from 79
-	iLowS = 134;
+	iHighH = 61; //GIMP converted from 87
+	iLowS = 65;
 	iHighS = 254;
-	iLowV = 92;
-	iHighV = 206;
+	iLowV = 75;
+	iHighV = 250;
 
 	//Create binary colour segmented mask
 	cv::Mat greenPocketMask = PocketDetector::hsiSegment(frame, open_size, close_size,
@@ -111,7 +111,7 @@ cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame, int frameIterato
 	cv::Mat allPocketMask = pinkPocketMask + greenPocketMask + orangePocketMask + purplePocketMask;
 	cv::Mat maskedFrame;
 	frame.copyTo(maskedFrame, allPocketMask);
-	imshow("All Pockets", maskedFrame);
+	//imshow("All Pockets", maskedFrame);
 
 	// Set up the detector with parameters and detect
 	cv::SimpleBlobDetector blob_detector(params);
@@ -135,7 +135,7 @@ cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame, int frameIterato
 	cv::drawKeypoints(allPocketMask, keypoints, keypointMask, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 	cv::Mat maskedKeypointFrame;
 	frame.copyTo(maskedFrame, allPocketMask);
-	imshow("All Pockets w/ Points", keypointMask);
+	//imshow("All Pockets w/ Points", keypointMask);
 
 	//Pocket points are filled with inference
 	PointLocator pointLocator = PointLocator();
@@ -149,7 +149,7 @@ cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame, int frameIterato
 	cv::Mat keypointMask1;
 	cv::drawKeypoints(allPocketMask, selectedKeyPoints, keypointMask1, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 	frame.copyTo(maskedFrame, allPocketMask);
-	imshow("Matched Pockets w/ Points", keypointMask1);
+	//imshow("Matched Pockets w/ Points", keypointMask1);
 
 	return pocketPoints;
 }

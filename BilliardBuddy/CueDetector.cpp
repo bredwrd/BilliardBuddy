@@ -9,28 +9,36 @@ CueDetector::~CueDetector()
 {
 }
 
+void CueDetector::getCueMask(cv::Mat& mask)
+{
+	cueMask.copyTo(mask);
+	cv::bitwise_not(mask, mask);
+}
+
 cv::vector<cv::Vec2i> CueDetector::detect(cv::Mat frame, int frameIterator)
 {
+	// Create blank cueMask;
+	cueMask = cv::Mat(640, 480, CV_8UC3, cv::Scalar(0, 0, 0));
+
 	// Reset cueLines.
 	cueLine[0] = cv::Vec2i(0, 0);
 	cueLine[1] = cv::Vec2i(0, 0);
 
 	cv::Mat croppedFrame = frame.clone(); // copy so we don't overwrite the user's view with GaussianBlur's blur call.
 	croppedFrame = croppedFrame(cv::Rect(CROP_X, CROP_Y, CROP_WIDTH, CROP_HEIGHT)); // Crop the image for the typical location of the cue.
+
 	GaussianBlur(croppedFrame);
 	hsiSegment(croppedFrame);
 	skeleton(croppedFrame);
 	//regHoughLines(croppedFrame, 120);
 	probHoughLinesCueSegments(croppedFrame);
 
-	cv::line(frame, cv::Point(cueLine[0][0], cueLine[0][1]), cv::Point(cueLine[1][0], cueLine[1][1]), cv::Scalar(0, 0, 255), 3, CV_AA);
+	cv::line(frame, cv::Point(cueLine[0][0], cueLine[0][1]), cv::Point(cueLine[1][0], cueLine[1][1]), cv::Scalar(255, 255, 255), 3, CV_AA);
 
-	// Assumption: second cueLine point is always the uppermost.
-	CueBallDetector cueBallDetector;
-	cueBallDetector.setCropX(cueLine[1][0]);
-	cueBallDetector.setCropY(cueLine[1][1]);
-	cueBallDetector.detect(frame, frameIterator);
+	// Draw on cueMask in white
+	cv::line(cueMask, cv::Point(cueLine[0][0], cueLine[0][1]), cv::Point(cueLine[1][0], cueLine[1][1]), cv::Scalar(255, 255, 255), 12, CV_AA);
 
+	imshow("debug cueMask", cueMask);
 	return cueLine;
 }
 

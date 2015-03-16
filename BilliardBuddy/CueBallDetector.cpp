@@ -18,40 +18,68 @@ void CueBallDetector::setCropY(int value)
 	cropY = value;
 }
 
+void CueBallDetector::setTableMask(cv::Mat frame)
+{
+	tableMask = frame;
+}
+
+void CueBallDetector::setCueMask(cv::Mat mask)
+{
+	cueMask = mask;
+	cv::imshow("cueMask set", mask);
+}
+
 cv::vector<cv::Vec2i> CueBallDetector::detect(cv::Mat frame, int frameIterator)
 {
-	int cueX = 0;
-	int cueY = 0;
+		//cv::Mat croppedFrame = frame(cv::Rect(CROP_WIDTH, CROP_HEIGHT, frame.cols - CROP_WIDTH * 2, frame.rows - CROP_HEIGHT * 2)); // Crop the image for the typical location of the cue.
+		//imshow("Debug cueball", croppedFrame);
 
-	cv::Mat croppedFrame = frame(cv::Rect(100, 100, CROP_WIDTH, CROP_HEIGHT)); // Crop the image for the typical location of the cue.
-	imshow("debug cueball crop", croppedFrame);
-	detectWithBlobDetector(frame);
+		//erode
+		int erode_size = 24;
+		erode(tableMask, tableMask, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(erode_size*2, erode_size*2)));
+		
+		cv::Mat combinedMask;
+		cueMask.copyTo(combinedMask, tableMask);
 
-	// Convert cropped coords to global coords.
-	cv::Vec2i cueBall = cv::Vec2i(0 + cropX, 0  + cropY);
-	cueBallPosition[0] = cueBall;
+		cv::Mat tableMaskedFrame;
+		frame.copyTo(tableMaskedFrame, combinedMask);
+		imshow("debug combined mask", tableMaskedFrame);
+
+		detectWithBlobDetector(tableMaskedFrame);
+
+
+		// Convert cropped coords to global coords.
+		cv::Vec2i cueBall = cv::Vec2i(0 + cropX, 0 + cropY);
+		cueBallPosition[0] = cueBall;
+
 	return cueBallPosition;
 }
 
 void CueBallDetector::detectWithBlobDetector(cv::Mat& frame)
 {
+	imshow("debug blob input", frame);
 	//Specify opening/closing size
 	int open_size = 5;
 	int close_size = 5;
 
 	// White Ball
-	int iLowH = 0;
-	int iHighH = 57;
-	int iLowS = 0;
+	int iLowH = 14;
+	int iHighH = 42;
+	int iLowS = 40;
 	int iHighS = 245;
-	int iLowV = 0;
-	int iHighV = 235;
+	int iLowV = 130;
+	int iHighV = 255;
 
 	//Create binary colour segmented mask
 	cv::Mat whiteBallMask = hsiSegment(frame, open_size, close_size,
 		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
 
 	imshow("Cue Ball", whiteBallMask);
+
+	// Detect centre of mask.
+	//cv::Moments m = cv::moments((whiteBallMask >= 50), true);
+	//cv::Point2d p(m.m10 / m.m00, m.m01 / m.m00);
+	//std::cout <<  "CoM: " << p.x << ", " << p.y << std::endl;
 
 	// set up the parameters (check the defaults in opencv's code in blobdetector.cpp)
 	cv::SimpleBlobDetector::Params params;
@@ -61,7 +89,7 @@ void CueBallDetector::detectWithBlobDetector(cv::Mat& frame)
 	params.filterByColor = false;
 	params.filterByCircularity = false;
 	params.filterByArea = true;
-	params.minArea = 50.0f;
+	params.minArea = 100.0f;
 	params.maxArea = 5000.0f;
 
 	// Set up the detector with parameters and detect
@@ -73,25 +101,28 @@ void CueBallDetector::detectWithBlobDetector(cv::Mat& frame)
 	int height = int(keypoints.size());
 	cv::vector<cv::Vec2i> pocketPoints(height);
 
+
 	// extract the x y coordinates of the keypoints 
 	for (int i = 0; i < keypoints.size(); i++){
 		float X = keypoints[i].pt.x;
 		float Y = keypoints[i].pt.y;
-		//Converts from float to int (doesn't need to worry about negatives)
-		pocketPoints[i][0] = int(X + 0.5);
-		pocketPoints[i][1] = int(Y + 0.5);
 
 		//Used to Check Pocket Points Conversion is accurate until accuracy can be judged in physics calculations
-		/*using std::cout;
+		using std::cout;
 		using std::endl;
 		cout << "keypoints " << i << " : " << keypoints[i].pt.x << " " << keypoints[i].pt.y << endl;
-		cout << "pocket points " << i << " : " << pocketPoints[i][0] << " " << pocketPoints[i][1] << endl;*/
 	}
 
 	cv::Mat keypointMask;
-	cv::drawKeypoints(whiteBallMask, keypoints, keypointMask, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+	cv::drawKeypoints(frame, keypoints, keypointMask, cv::Scalar(0,0,0), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+	imshow("cueball keypoint drawn", keypointMask);
 	cv::Mat maskedKeypointFrame;
 
+	if (keypoints.size() > 0)
+	{
+		cueBallPosition[0][0] = keypoints[0].pt.x;
+		cueBallPosition[0][1] = keypoints[0].pt.y;
+	}
 	//frame.copyTo(maskedFrame, whiteBallMask);
 }
 

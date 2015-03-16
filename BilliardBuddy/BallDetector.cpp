@@ -10,6 +10,26 @@ BallDetector::~BallDetector()
 {
 }
 
+void BallDetector::setCropX(int value)
+{
+	cropX = value;
+}
+void BallDetector::setCropY(int value)
+{
+	cropY = value;
+}
+
+void BallDetector::setTableMask(cv::Mat frame)
+{
+	tableMask = frame;
+}
+
+void BallDetector::setCueMask(cv::Mat mask)
+{
+	cueMask = mask;
+	cv::imshow("cueMask set", mask);
+}
+
 cv::vector<cv::Vec2i> BallDetector::detect(cv::Mat frame, int frameIterator)
 {
 	// Reset cueLines.
@@ -26,6 +46,15 @@ cv::Mat BallDetector::hsiSegment(cv::Mat& frame, int open_size, int close_size, 
 	//Convert the captured frame from BGR to HSV
 	cv::Mat imgHSV;
 	cvtColor(frame, imgHSV, cv::COLOR_BGR2HSV);
+
+	// Red Balls
+	// We have two hue ranges so segment for both.
+	int high_lowH = 110;
+	int high_highH = 180;
+
+	cv::Mat highHueMaskedFrame;
+	cv::inRange(imgHSV, cv::Scalar(iLowH, 0, 0), cv::Scalar(iHighH, 0, 0), highHueMaskedFrame); //Threshold the image
+	imgHSV.copyTo(imgHSV, highHueMaskedFrame);
 
 	//Create mask
 	cv::Mat maskedFrame;
@@ -44,41 +73,27 @@ cv::Mat BallDetector::hsiSegment(cv::Mat& frame, int open_size, int close_size, 
 
 void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 {
-	imshow("debug frame", frame);
-	//Specify opening/closing size
+	// Close to filter background.
 	int open_size = 5;
 	int close_size = 5;
 
 	// Red Balls
 	// Hue is on 1 - 25 and 240 - 255 (in GIMP). Use higher range for now and let morphological closing fill it in.
-	int iLowH = 170; 
-	int iHighH = 255;
-	int iLowS = 65;
-	int iHighS = 255;
-	int iLowV = 100;
-	int iHighV = 45;
+	int iLowH = 0;
+	int iHighH = 30;
+
+	int iLowS = 5;
+	int iHighS = 200;
+	int iLowV = 0;
+	int iHighV = 150;
 
 	//Create binary colour segmented mask
 	cv::Mat redBallMask = hsiSegment(frame, open_size, close_size,
 		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
 
-	// White Balls
-	iLowH = 0;
-	iHighH = 57;
-	iLowS = 0;
-	iHighS = 245;
-	iLowV = 0;
-	iHighV = 235;
-
-	//Create binary colour segmented mask
-	cv::Mat whiteBallMask = hsiSegment(frame, open_size, close_size,
-		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
-
-
 	cv::Mat maskedFrame;
-	cv::Mat allPocketMask = redBallMask + whiteBallMask;
-	frame.copyTo(maskedFrame, allPocketMask);
-	imshow("All Balls", maskedFrame);
+	frame.copyTo(maskedFrame, redBallMask);
+	imshow("Red Balls", maskedFrame);
 
 	// set up the parameters (check the defaults in opencv's code in blobdetector.cpp)
 	cv::SimpleBlobDetector::Params params;
@@ -94,7 +109,7 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 	// Set up the detector with parameters and detect
 	cv::SimpleBlobDetector blob_detector(params);
 	cv::vector<cv::KeyPoint> keypoints;
-	blob_detector.detect(allPocketMask, keypoints);
+	blob_detector.detect(redBallMask, keypoints);
 
 	// For changing the vector data type
 	int height = int(keypoints.size());
@@ -104,22 +119,14 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 	for (int i = 0; i < keypoints.size(); i++){
 		float X = keypoints[i].pt.x;
 		float Y = keypoints[i].pt.y;
-		//Converts from float to int (doesn't need to worry about negatives)
-		pocketPoints[i][0] = int(X + 0.5);
-		pocketPoints[i][1] = int(Y + 0.5);
+
 
 		//Used to Check Pocket Points Conversion is accurate until accuracy can be judged in physics calculations
-		/*using std::cout;
-		using std::endl;
-		cout << "keypoints " << i << " : " << keypoints[i].pt.x << " " << keypoints[i].pt.y << endl;
-		cout << "pocket points " << i << " : " << pocketPoints[i][0] << " " << pocketPoints[i][1] << endl;*/
+		std::cout << "keypoints " << i << " : " << keypoints[i].pt.x << " " << keypoints[i].pt.y << std::endl;
 	}
 
 	cv::Mat keypointMask;
-	cv::drawKeypoints(allPocketMask, keypoints, keypointMask, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-	cv::Mat maskedKeypointFrame;
-	frame.copyTo(maskedFrame, allPocketMask);
-	//imshow("All Pockets w/ Points", keypointMask);
+	cv::drawKeypoints(frame, keypoints, keypointMask, cv::Scalar(0,0,0), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 }
 
 void BallDetector::detectWithHoughCircles(cv::Mat& frame)

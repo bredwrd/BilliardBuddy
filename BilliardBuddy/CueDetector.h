@@ -23,15 +23,17 @@ private:
 	void CueDetector::GaussianBlur(cv::Mat& frame);
 	void CueDetector::hsiSegment(cv::Mat& frame);
 	static const int CROP_X = 30;
-	static const int CROP_Y = 280;
+	static const int CROP_Y = 80;
 	static const int CROP_WIDTH = 420;
-	static const int CROP_HEIGHT = 280;
+	static const int CROP_HEIGHT = 480;
 	cv::vector<cv::Vec2i> cueLine;
 	cv::vector<cv::Vec2i> cueLineHistory; // Tracks last x (e.g. 5) cueLinePoints and averages them.
+	cv::Mat cueMask;
 
 public:
 	CueDetector();
 	cv::vector<cv::Vec2i> detect(cv::Mat frame, int frameIterator);
+	void CueDetector::getCueMask(cv::Mat& mask);
 	~CueDetector();
 };
 

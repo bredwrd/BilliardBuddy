@@ -18,7 +18,7 @@ void HMDInterface::drawToHMD(cv::Mat& leftFrame, cv::Mat& rightFrame)
 
 	// Merge left and right frames.
 	cv::Mat mergedFrame;
-	cv::hconcat(leftFrame, rightFrame, mergedFrame);
+	cv::hconcat(rightFrame, leftFrame, mergedFrame);
 
 	// Display feed to user.
 	imshow("Merged Feed", mergedFrame);

@@ -4,6 +4,8 @@ using namespace std;
 
 int BilliardBuddy::frameIterator = 0;
 cv::vector<Vec2i> BilliardBuddy::cueCoords = cv::vector<Vec2i>(0, 0);
+// Create blank cueMask;
+cv::Mat BilliardBuddy::cueMask = cv::Mat(640, 480, CV_8UC3, cv::Scalar(0, 0, 0));
 
 int main(int argc, char* argv[])
 {
@@ -94,14 +96,19 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 		preProcessor.preProcess(rightFrame);
 	}
 
-	// Detect features.
-	cv::vector<pocket> pocketPoints = poolTableDetector.detectTable(rightFrame, frameIterator);
-
 	//Detect Cue
 	if (frameIterator == 1 || frameIterator == 0)
 	{
 		cueCoords = cueDetector.detect(rightFrame, frameIterator);
+		cueDetector.getCueMask(cueMask);
 	}
+
+	// Detect features.
+	poolTableDetector.setCueMask(cueMask);
+	cv::vector<pocket> pocketPoints = poolTableDetector.detectTable(rightFrame, frameIterator);
+
+	// Find target pocket location
+	cv::Point2f targetPocket = getTargetPocket(pocketPoints, float(360), float(0));
 
 	//Detect White Ball
 	//TODO
@@ -158,4 +165,25 @@ void read(const FileNode& node, Settings& x, const Settings& default_value = Set
 		x = default_value;
 	else
 		x.read(node);
+}
+
+//Returns target pocket 3D coordinates given specified 2D coordinates (See physics model or point locator for 2D coordinates)
+cv::Point2f BilliardBuddy::getTargetPocket(cv::vector<pocket> pockets, float xDestination, float yDestination){
+	//Initializes targetPocket default
+	cv::Point2f targetPocket;
+	targetPocket.x = float(0);
+	targetPocket.y = float(0);
+
+	//Sets epsilon value for comparing floats
+	float epsilon = float(0.05);
+
+	//Loops through all pockets to check if they have destination points specified
+	for (int i = 0; i < pockets.size(); i++){
+		if (abs(pockets[i].xLocation - xDestination) < epsilon && abs(pockets[i].yLocation - yDestination) < epsilon){
+			targetPocket.x = pockets[i].pocketPoints.pt.x;
+			targetPocket.y = pockets[i].pocketPoints.pt.y;
+		}
+	}
+
+	return targetPocket;
 }
