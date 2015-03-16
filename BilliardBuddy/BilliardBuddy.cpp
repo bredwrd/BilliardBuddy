@@ -110,17 +110,14 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 
 	//Detect other balls
 	//TODO?? Brian?
-	cv::vector<Vec2f> balls(2);
+	cv::vector<Vec2f> balls(1);
 	balls[0] = { 200, 140 };
-	balls[1] = { 200, 170 };
+	//balls[1] = { 200, 170 };
 	//balls[2] = { 150, 150 };
 	
 	//Calculate Physics Model
 	cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cueCoords, whiteBall, balls);
-	//for (int e = 0; e < pathVector.size(); e++){
-	//	cout << pathVector[e].startPoint << endl;
-	//	cout << pathVector[e].endPoint << endl;
-	//}
+
 	//Visually Augment
 	trajectoryAugmentor.augment(rightFrame, pathVector);
 	imshow("3D", rightFrame);
