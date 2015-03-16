@@ -113,12 +113,12 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	//Detect White Ball
 	//TODO
 	cv::vector<Vec2f> whiteBall(1);
-	whiteBall[0] = { 200, 100 };
+	whiteBall[0] = { 74.25, 108 }; //temp
 
 	//Detect other balls
 	//TODO?? Brian?
 	cv::vector<Vec2f> balls(1);
-	balls[0] = { 200, 140 };
+	balls[0] = { 211.5, 225 }; //temp
 	//balls[1] = { 200, 170 };
 	//balls[2] = { 150, 150 };
 	

@@ -122,7 +122,7 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 
 
 		//Used to Check Pocket Points Conversion is accurate until accuracy can be judged in physics calculations
-		std::cout << "keypoints " << i << " : " << keypoints[i].pt.x << " " << keypoints[i].pt.y << std::endl;
+		//std::cout << "keypoints " << i << " : " << keypoints[i].pt.x << " " << keypoints[i].pt.y << std::endl;
 	}
 
 	cv::Mat keypointMask;
