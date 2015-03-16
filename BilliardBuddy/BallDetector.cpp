@@ -22,11 +22,15 @@ void BallDetector::setCropY(int value)
 
 cv::vector<cv::Vec2i> BallDetector::detectByTargetPocket(cv::Mat frame, int frameIterator, cv::Point2f targetPocket)
 {
-	if (targetPocket.x - CROP_WIDTH > 0 && targetPocket.y - CROP_HEIGHT > 0)
+	if (targetPocket.x - CROP_WIDTH > 0 && (frame.rows - targetPocket.y) - CROP_HEIGHT > 0)
 	{
 		cv::Mat croppedFrame = frame(cv::Rect(targetPocket.x - CROP_WIDTH, targetPocket.y, CROP_WIDTH * 2, CROP_HEIGHT)); // Crop the image for the typical location of the cue.
-		//imshow("Debug target ball cropped", croppedFrame);
+		imshow("Debug target ball cropped", croppedFrame);
 		detectWithBlobDetector(croppedFrame);
+
+		// Convert cropped coordinates to full-frame coordinates
+		targetBallPosition[0][0] = targetBallPosition[0][0] + targetPocket.x - CROP_WIDTH;
+		targetBallPosition[0][1] = targetBallPosition[0][1] + targetPocket.y;
 	}
 	
 	return targetBallPosition;
@@ -106,7 +110,7 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 
 	cv::Mat maskedFrame;
 	frame.copyTo(maskedFrame, redBallMask);
-	//imshow("Red Balls", maskedFrame);
+	imshow("Red Balls", maskedFrame);
 
 	// set up the parameters (check the defaults in opencv's code in blobdetector.cpp)
 	cv::SimpleBlobDetector::Params params;
@@ -116,8 +120,8 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 	params.filterByColor = false;
 	params.filterByCircularity = false;
 	params.filterByArea = true;
-	params.minArea = 50.0f;
-	params.maxArea = 5000.0f;
+	params.minArea = 10.0f;
+	params.maxArea = 50.0f;
 
 	// Set up the detector with parameters and detect
 	cv::SimpleBlobDetector blob_detector(params);
@@ -134,7 +138,7 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 		float Y = keypoints[i].pt.y;
 
 		//Used to Check Pocket Points Conversion is accurate until accuracy can be judged in physics calculations
-		//std::cout << "keypoints " << i << " : " << keypoints[i].pt.x << " " << keypoints[i].pt.y << std::endl;
+		std::cout << "objball " << i << " : " << keypoints[i].pt.x << " " << keypoints[i].pt.y << std::endl;
 	}
 
 	cv::Mat keypointMask;

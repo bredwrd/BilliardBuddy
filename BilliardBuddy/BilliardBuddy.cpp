@@ -111,7 +111,7 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	cv::Point2f targetPocket = getTargetPocket(pocketPoints, float(360), float(0));
 	BallDetector ballDetector = BallDetector();
 
-	ballDetector.detectByTargetPocket(rightFrame, frameIterator, targetPocket);
+	cv::vector<cv::Vec2i> ballPosition = ballDetector.detectByTargetPocket(rightFrame, frameIterator, targetPocket);
 
 	//Detect White Ball
 	//TODO
@@ -120,10 +120,8 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 
 	//Detect other balls
 	//TODO?? Brian?
-	cv::vector<Vec2f> balls(2);
-	balls[0] = { 200, 140 };
-	balls[1] = { 200, 170 };
-	//balls[2] = { 150, 150 };
+	cv::vector<Vec2f> balls(1);
+	balls[0] = ballPosition[0];
 	
 	//Calculate Physics Model
 	cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cueCoords, whiteBall, balls);
