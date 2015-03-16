@@ -21,7 +21,13 @@ void TrajectoryAugmentor::augment(cv::Mat& frame, cv::vector<Path> trajectoryPoi
 		tempStartInt[1] = (int)tempStart[1];
 		tempEndInt[0] = (int)tempEnd[0];
 		tempEndInt[1] = (int)tempEnd[1];
-		cv::line(frame, cv::Point(tempStartInt[0], tempStartInt[1]), cv::Point(tempEndInt[0], tempEndInt[1]), cv::Scalar(0, 0, 255), 3, CV_AA);
+		if ((i==0)||(i==1)){
+			cv::line(frame, cv::Point(tempStartInt[0], tempStartInt[1]), cv::Point(tempEndInt[0], tempEndInt[1]), cv::Scalar(255, 255, 255), 1, CV_AA);
+		}
+		else{
+			cv::line(frame, cv::Point(tempStartInt[0], tempStartInt[1]), cv::Point(tempEndInt[0], tempEndInt[1]), cv::Scalar(0, 0, 255), 1, CV_AA);
+		}
+	
 	}
 
 }

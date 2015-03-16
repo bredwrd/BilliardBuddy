@@ -38,7 +38,7 @@ cv::vector<cv::Vec2i> CueDetector::detect(cv::Mat frame, int frameIterator)
 	// Draw on cueMask in white
 	cv::line(cueMask, cv::Point(cueLine[0][0], cueLine[0][1]), cv::Point(cueLine[1][0], cueLine[1][1]), cv::Scalar(255, 255, 255), 12, CV_AA);
 
-	imshow("debug cueMask", cueMask);
+	//imshow("debug cueMask", cueMask);
 	return cueLine;
 }
 

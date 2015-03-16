@@ -46,6 +46,6 @@ private:
 public:
 	PhysicsModel();
 	void calculateTrajectories(cv::vector<Path>& trajectoryPoints, cv::vector<cv::Vec2f> cueBall, cv::vector<cv::Vec2f> targetBalls, cv::vector<cv::Vec2f> cueStick);
-	cv::vector<Path> calculate(cv::Mat frame, cv::vector<pocket> pockets, cv::vector<cv::Vec2i> cueStick, cv::vector<cv::Vec2f> cueBall, cv::vector<cv::Vec2f> targetBalls);
+	cv::vector<Path> calculate(cv::Mat frame, cv::vector<pocket> pockets, cv::vector<cv::Vec2i> cueStick, cv::vector<cv::Vec2i> cueBall, cv::vector<cv::Vec2f> targetBalls);
 	~PhysicsModel();
 };

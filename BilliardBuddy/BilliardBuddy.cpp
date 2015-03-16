@@ -111,23 +111,23 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	cv::vector<cv::Vec2i> whiteBall = poolTableDetector.getCueBallCoords();
 	BallDetector ballDetector = BallDetector();
 	cv::Point2f targetPocket = getTargetPocket(pocketPoints, float(360), float(0));
-	ballDetector.detectByTargetPocket(rightFrame, frameIterator, targetPocket);
-	//cout << whiteBall[0] << endl;
+	cv::vector<cv::Vec2i> ballPosition = ballDetector.detectByTargetPocket(rightFrame, frameIterator, targetPocket);
+	//cout << ballPosition[0] << endl;
 	//Detect other balls
 	//TODO?? Brian?
 	cv::vector<Vec2f> balls(1);
-	balls[0] = { 211.5, 225 }; //temp
+	balls[0] = ballPosition[0]; //temp
 	//balls[1] = { 200, 170 };
 	//balls[2] = { 150, 150 };
 	
 	//Calculate Physics Model
-	//cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cueCoords, whiteBall, balls);
+	cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cueCoords, whiteBall, balls);
 
 	//Visually Augment
-	//trajectoryAugmentor.augment(rightFrame, pathVector);
-	//imshow("3D", rightFrame);
+	trajectoryAugmentor.augment(rightFrame, pathVector);
+	imshow("3D", rightFrame);
 	textAugmentor.augment(rightFrame);
-	cueAugmentor.augment(rightFrame, cueCoords);
+	//cueAugmentor.augment(rightFrame, cueCoords);
 	hmdInterface.drawToHMD(leftFrame, rightFrame);
 
 	if (frameIterator == 7)
