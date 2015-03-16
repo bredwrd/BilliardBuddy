@@ -110,6 +110,7 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	// Find target pocket location
 	cv::vector<cv::Vec2i> whiteBall = poolTableDetector.getCueBallCoords();
 	BallDetector ballDetector = BallDetector();
+
 	cv::Point2f targetPocket = getTargetPocket(pocketPoints, float(360), float(0));
 	cv::vector<cv::Vec2i> ballPosition = ballDetector.detectByTargetPocket(rightFrame, frameIterator, targetPocket);
 	//cout << ballPosition[0] << endl;
