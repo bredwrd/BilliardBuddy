@@ -83,8 +83,7 @@ cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat&
 
 		cueBallDetector.setTableMask(tableMask);
 		cueBallDetector.setCueMask(cueMask);
-		cueBallDetector.detect(frame, frameIterator);
-
+		cueBallPosition = cueBallDetector.detect(frame, frameIterator);
 		
 	}
 
@@ -185,4 +184,10 @@ void PoolTableDetector::regHoughLines(cv::Mat& frame, cv::Mat& houghMap, int thr
 		pt2.y = cvRound(y0 - 1000 * (a));
 		line(houghMap, pt1, pt2, cv::Scalar(0, 0, 255), 3, CV_AA);
 	}
+}
+
+cv::vector<cv::Vec2i> PoolTableDetector::getCueBallCoords(){
+
+	return cueBallPosition;
+
 }

@@ -35,6 +35,7 @@ private:
 	cv::Mat tableMask;
 	cv::vector<pocket> tableEdgeResult;
 	cv::Mat cueMask;
+	cv::vector<cv::Vec2i> cueBallPosition;
 
 public:
 	PoolTableDetector();
@@ -42,5 +43,7 @@ public:
 	cv::vector<pocket> detectTable(cv::Mat frame, int frameIterator);
 	~PoolTableDetector();
 	void setCueMask(cv::Mat& mask);
+	cv::vector<cv::Vec2i> PoolTableDetector::getCueBallCoords();
+	
 };
 
