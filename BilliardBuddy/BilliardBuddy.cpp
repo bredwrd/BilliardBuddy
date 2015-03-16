@@ -109,6 +109,9 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 
 	// Find target pocket location
 	cv::Point2f targetPocket = getTargetPocket(pocketPoints, float(360), float(0));
+	BallDetector ballDetector = BallDetector();
+
+	ballDetector.detectByTargetPocket(rightFrame, frameIterator, targetPocket);
 
 	//Detect White Ball
 	//TODO

@@ -21,13 +21,14 @@ private:
 	cv::Mat cueMask;
 	int cropX = 0;
 	int cropY = 0;
-	static const int CROP_WIDTH = 20;
-	static const int CROP_HEIGHT = 20;
+	static const int CROP_WIDTH = 30;
+	static const int CROP_HEIGHT = 40;
 
 public:
 	BallDetector();
 	~BallDetector();
 	cv::vector<cv::Vec2i> detect(cv::Mat frame, int frameIterator); // returns an arbitrary number of ball coordinates in viewspace
+	cv::vector<cv::Vec2f> BallDetector::detectByTargetPocket(cv::Mat frame, int frameIterator, cv::Point2f targetPocket);
 	void setCropX(int value);
 	void setCropY(int value);
 	void setTableMask(cv::Mat frame);
