@@ -54,11 +54,11 @@ cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame, int frameIterato
 
 	//Green
 	iLowH = 29; //GIMP converted from 41
-	iHighH = 55; //GIMP converted from 79
-	iLowS = 134;
+	iHighH = 61; //GIMP converted from 87
+	iLowS = 65;
 	iHighS = 254;
-	iLowV = 92;
-	iHighV = 206;
+	iLowV = 75;
+	iHighV = 250;
 
 	//Create binary colour segmented mask
 	cv::Mat greenPocketMask = PocketDetector::hsiSegment(frame, open_size, close_size,
