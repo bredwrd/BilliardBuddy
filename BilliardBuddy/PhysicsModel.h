@@ -20,7 +20,7 @@ const int maxTotalTrajs = 3;
 //Maximum number of edge trajectories drawn 
 const int maxEdgeTrajs = 0;
 //Maximum distance between cue stick and cue ball for cue ball to be crossed
-const int maxCueDist = 100;
+const int maxCueDist = 30;
 //Maximum length of a final trajectory
 const float cutFactor = 0.25;
 //Pocket location constants

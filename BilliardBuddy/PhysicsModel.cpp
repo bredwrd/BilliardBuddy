@@ -277,9 +277,17 @@ cv::vector<Path> PhysicsModel::getTrajectoryGroup(cv::Vec2f param1, cv::Vec2f pa
 				ghostPoint2[0][1] = mainResults[1][1]+ballRadius;
 			}
 			else{
-				ghostSlope = -1/((mainResults[3][1]-mainResults[2][1])/(mainResults[3][0]-mainResults[2][0]));
-				ghostPoint1 = backPointFromLine(1,mainResults[1],ghostSlope,mainResults[1],ballRadius);
-				ghostPoint2[0] = frontFromBack(ghostPoint1[0],mainResults[1]);
+				ghostSlope[0] = -1/((mainResults[3][1]-mainResults[2][1])/(mainResults[3][0]-mainResults[2][0]));
+				if ((ghostSlope[0] < -100)||(ghostSlope[0] > 100)){
+					ghostPoint1[0][0] = mainResults[1][0];
+					ghostPoint1[0][1] = mainResults[1][1] - ballRadius;
+					ghostPoint2[0][0] = mainResults[1][0];
+					ghostPoint2[0][1] = mainResults[1][1] + ballRadius;
+				}
+				else{
+					ghostPoint1 = backPointFromLine(1, mainResults[1], ghostSlope, mainResults[1], ballRadius);
+					ghostPoint2[0] = frontFromBack(ghostPoint1[0], mainResults[1]);
+				}		
 			}
 			if (norm(ghostPoint1[0], param1) < norm(ghostPoint2[0], param1)){
 				ghostFrontPoint = ghostPoint2;
