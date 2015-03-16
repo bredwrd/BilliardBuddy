@@ -3,6 +3,7 @@
 
 BallDetector::BallDetector()
 {
+	targetBallPosition.resize(1);
 }
 
 
@@ -19,13 +20,16 @@ void BallDetector::setCropY(int value)
 	cropY = value;
 }
 
-cv::vector<cv::Vec2f> BallDetector::detectByTargetPocket(cv::Mat frame, int frameIterator, cv::Point2f targetPocket)
+cv::vector<cv::Vec2i> BallDetector::detectByTargetPocket(cv::Mat frame, int frameIterator, cv::Point2f targetPocket)
 {
 	if (targetPocket.x - CROP_WIDTH > 0 && targetPocket.y - CROP_HEIGHT > 0)
 	{
 		cv::Mat croppedFrame = frame(cv::Rect(targetPocket.x - CROP_WIDTH, targetPocket.y, CROP_WIDTH * 2, CROP_HEIGHT)); // Crop the image for the typical location of the cue.
-		imshow("Debug target ball cropped", croppedFrame);
+		//imshow("Debug target ball cropped", croppedFrame);
+		detectWithBlobDetector(croppedFrame);
 	}
+	
+	return targetBallPosition;
 }
 
 void BallDetector::setTableMask(cv::Mat frame)
@@ -36,7 +40,7 @@ void BallDetector::setTableMask(cv::Mat frame)
 void BallDetector::setCueMask(cv::Mat mask)
 {
 	cueMask = mask;
-	cv::imshow("cueMask set", mask);
+	//cv::imshow("cueMask set", mask);
 }
 
 cv::vector<cv::Vec2i> BallDetector::detect(cv::Mat frame, int frameIterator)
@@ -102,7 +106,7 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 
 	cv::Mat maskedFrame;
 	frame.copyTo(maskedFrame, redBallMask);
-	imshow("Red Balls", maskedFrame);
+	//imshow("Red Balls", maskedFrame);
 
 	// set up the parameters (check the defaults in opencv's code in blobdetector.cpp)
 	cv::SimpleBlobDetector::Params params;
@@ -129,13 +133,18 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 		float X = keypoints[i].pt.x;
 		float Y = keypoints[i].pt.y;
 
-
 		//Used to Check Pocket Points Conversion is accurate until accuracy can be judged in physics calculations
-		std::cout << "keypoints " << i << " : " << keypoints[i].pt.x << " " << keypoints[i].pt.y << std::endl;
+		//std::cout << "keypoints " << i << " : " << keypoints[i].pt.x << " " << keypoints[i].pt.y << std::endl;
 	}
 
 	cv::Mat keypointMask;
 	cv::drawKeypoints(frame, keypoints, keypointMask, cv::Scalar(0,0,0), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+
+	if (keypoints.size() > 0)
+	{
+		targetBallPosition[0][0] = keypoints[0].pt.x;
+		targetBallPosition[0][1] = keypoints[0].pt.y;
+	}
 }
 
 void BallDetector::detectWithHoughCircles(cv::Mat& frame)

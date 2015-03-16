@@ -26,7 +26,7 @@ void CueBallDetector::setTableMask(cv::Mat frame)
 void CueBallDetector::setCueMask(cv::Mat mask)
 {
 	cueMask = mask;
-	cv::imshow("cueMask set", mask);
+	//cv::imshow("cueMask set", mask);
 }
 
 cv::vector<cv::Vec2i> CueBallDetector::detect(cv::Mat frame, int frameIterator)
@@ -43,7 +43,7 @@ cv::vector<cv::Vec2i> CueBallDetector::detect(cv::Mat frame, int frameIterator)
 
 		cv::Mat tableMaskedFrame;
 		frame.copyTo(tableMaskedFrame, combinedMask);
-		imshow("debug combined mask", tableMaskedFrame);
+		//imshow("debug combined mask", tableMaskedFrame);
 
 		detectWithBlobDetector(tableMaskedFrame);
 
@@ -57,7 +57,6 @@ cv::vector<cv::Vec2i> CueBallDetector::detect(cv::Mat frame, int frameIterator)
 
 void CueBallDetector::detectWithBlobDetector(cv::Mat& frame)
 {
-	imshow("debug blob input", frame);
 	//Specify opening/closing size
 	int open_size = 5;
 	int close_size = 5;
@@ -74,7 +73,7 @@ void CueBallDetector::detectWithBlobDetector(cv::Mat& frame)
 	cv::Mat whiteBallMask = hsiSegment(frame, open_size, close_size,
 		iLowH, iLowS, iLowV, iHighH, iHighS, iHighV);
 
-	imshow("Cue Ball", whiteBallMask);
+	//imshow("Cue Ball", whiteBallMask);
 
 	// Detect centre of mask.
 	//cv::Moments m = cv::moments((whiteBallMask >= 50), true);
@@ -115,7 +114,7 @@ void CueBallDetector::detectWithBlobDetector(cv::Mat& frame)
 
 	cv::Mat keypointMask;
 	cv::drawKeypoints(frame, keypoints, keypointMask, cv::Scalar(0,0,0), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-	imshow("cueball keypoint drawn", keypointMask);
+	//imshow("cueball keypoint drawn", keypointMask);
 	cv::Mat maskedKeypointFrame;
 
 	if (keypoints.size() > 0)

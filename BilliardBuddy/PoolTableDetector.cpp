@@ -77,15 +77,9 @@ cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat&
 		cv::Mat maskedFrame;
 		frame.copyTo(maskedFrame, hsiSegmentationStageTwoFrame);
 
-		ballDetector.setTableMask(tableMask);
-		ballDetector.setCueMask(cueMask);
-		ballCoordinates = ballDetector.detect(maskedFrame, frameIterator);
-
 		cueBallDetector.setTableMask(tableMask);
 		cueBallDetector.setCueMask(cueMask);
-		cueBallDetector.detect(frame, frameIterator);
-
-		
+		cueBallDetector.detect(frame, frameIterator);		
 	}
 
 	if (frameIterator == 6 || frameIterator == 0)
