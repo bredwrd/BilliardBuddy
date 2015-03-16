@@ -19,6 +19,15 @@ void BallDetector::setCropY(int value)
 	cropY = value;
 }
 
+cv::vector<cv::Vec2f> BallDetector::detectByTargetPocket(cv::Mat frame, int frameIterator, cv::Point2f targetPocket)
+{
+	if (targetPocket.x - CROP_WIDTH > 0 && targetPocket.y - CROP_HEIGHT > 0)
+	{
+		cv::Mat croppedFrame = frame(cv::Rect(targetPocket.x - CROP_WIDTH, targetPocket.y, CROP_WIDTH * 2, CROP_HEIGHT)); // Crop the image for the typical location of the cue.
+		imshow("Debug target ball cropped", croppedFrame);
+	}
+}
+
 void BallDetector::setTableMask(cv::Mat frame)
 {
 	tableMask = frame;
