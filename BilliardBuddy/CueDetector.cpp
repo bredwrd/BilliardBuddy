@@ -17,6 +17,7 @@ cv::vector<cv::Vec2i> CueDetector::detect(cv::Mat frame, int frameIterator)
 
 	cv::Mat croppedFrame = frame.clone(); // copy so we don't overwrite the user's view with GaussianBlur's blur call.
 	croppedFrame = croppedFrame(cv::Rect(CROP_X, CROP_Y, CROP_WIDTH, CROP_HEIGHT)); // Crop the image for the typical location of the cue.
+	imshow("Debug cropped cue", croppedFrame);
 	GaussianBlur(croppedFrame);
 	hsiSegment(croppedFrame);
 	skeleton(croppedFrame);
@@ -27,8 +28,17 @@ cv::vector<cv::Vec2i> CueDetector::detect(cv::Mat frame, int frameIterator)
 
 	// Assumption: second cueLine point is always the uppermost.
 	CueBallDetector cueBallDetector;
-	cueBallDetector.setCropX(cueLine[1][0]);
-	cueBallDetector.setCropY(cueLine[1][1]);
+	if (cueLine[1][1] > cueLine[0][1])
+	{
+		cueBallDetector.setCropX(cueLine[1][0]);
+		cueBallDetector.setCropY(cueLine[1][1]);
+	}
+	else
+	{
+		cueBallDetector.setCropX(cueLine[0][0]);
+		cueBallDetector.setCropY(cueLine[0][1]);
+	}
+
 	cueBallDetector.detect(frame, frameIterator);
 
 	return cueLine;
