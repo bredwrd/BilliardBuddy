@@ -37,6 +37,7 @@ private:
 	static int frameIterator;
 	static cv::vector<Vec2i> cueCoords;
 	static cv::Point2f getTargetPocket(cv::vector<pocket> pockets, float xDestination, float yDestination);
+	static cv::Mat cueMask;
 
 public:
 	static void help();

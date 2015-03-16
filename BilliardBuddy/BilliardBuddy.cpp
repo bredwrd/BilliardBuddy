@@ -4,6 +4,8 @@ using namespace std;
 
 int BilliardBuddy::frameIterator = 0;
 cv::vector<Vec2i> BilliardBuddy::cueCoords = cv::vector<Vec2i>(0, 0);
+// Create blank cueMask;
+cv::Mat BilliardBuddy::cueMask = cv::Mat(640, 480, CV_8UC3, cv::Scalar(0, 0, 0));
 
 int main(int argc, char* argv[])
 {
@@ -94,17 +96,19 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 		preProcessor.preProcess(rightFrame);
 	}
 
-	// Detect features.
-	cv::vector<pocket> pocketPoints = poolTableDetector.detectTable(rightFrame, frameIterator);
-
-	// Find target pocket location
-	cv::Point2f targetPocket = getTargetPocket(pocketPoints, float(360), float(0));
-
 	//Detect Cue
 	if (frameIterator == 1 || frameIterator == 0)
 	{
 		cueCoords = cueDetector.detect(rightFrame, frameIterator);
+		cueDetector.getCueMask(cueMask);
 	}
+
+	// Detect features.
+	poolTableDetector.setCueMask(cueMask);
+	cv::vector<pocket> pocketPoints = poolTableDetector.detectTable(rightFrame, frameIterator);
+
+	// Find target pocket location
+	cv::Point2f targetPocket = getTargetPocket(pocketPoints, float(360), float(0));
 
 	//Detect White Ball
 	//TODO

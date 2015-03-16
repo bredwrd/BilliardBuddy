@@ -2,7 +2,8 @@
 
 PoolTableDetector::PoolTableDetector()
 {
-	BallDetector ballDetector = BallDetector();
+	ballDetector = BallDetector();
+	cueBallDetector = CueBallDetector();
 	cv::vector<cv::Vec2i> ballCoordinates = cv::vector<cv::Vec2i>();
 }
 
@@ -20,6 +21,11 @@ cv::vector<pocket> PoolTableDetector::detectTable(cv::Mat frame, int frameIterat
 {
 	pockets = detectTableWithColourSegmentation(frame, frameIterator);
 	return pockets; // TODO- populate vector containing points of pockets
+}
+
+void PoolTableDetector::setCueMask(cv::Mat& mask)
+{
+	cueMask = mask;
 }
 
 cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat& frame, int frameIterator)
@@ -71,6 +77,12 @@ cv::vector<pocket> PoolTableDetector::detectTableWithColourSegmentation(cv::Mat&
 		cv::Mat maskedFrame;
 		frame.copyTo(maskedFrame, hsiSegmentationStageTwoFrame);
 		ballCoordinates = ballDetector.detect(maskedFrame, frameIterator);
+
+		cueBallDetector.setTableMask(tableMask);
+		cueBallDetector.setCueMask(cueMask);
+		cueBallDetector.detect(frame, frameIterator);
+
+		
 	}
 
 	if (frameIterator == 6 || frameIterator == 0)

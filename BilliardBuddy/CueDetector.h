@@ -28,10 +28,12 @@ private:
 	static const int CROP_HEIGHT = 480;
 	cv::vector<cv::Vec2i> cueLine;
 	cv::vector<cv::Vec2i> cueLineHistory; // Tracks last x (e.g. 5) cueLinePoints and averages them.
+	cv::Mat cueMask;
 
 public:
 	CueDetector();
 	cv::vector<cv::Vec2i> detect(cv::Mat frame, int frameIterator);
+	void CueDetector::getCueMask(cv::Mat& mask);
 	~CueDetector();
 };
 

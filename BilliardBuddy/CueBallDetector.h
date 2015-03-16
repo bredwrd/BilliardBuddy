@@ -15,12 +15,14 @@ private:
 	void CueBallDetector::hsiSegment(cv::Mat& frame);
 	int cropX = 0;
 	int cropY = 0;
-	static const int CROP_WIDTH = 10;
-	static const int CROP_HEIGHT = 200;
+	static const int CROP_WIDTH = 20;
+	static const int CROP_HEIGHT = 20;
 	cv::vector<cv::Vec2i> cueBallPosition;
 	void CueBallDetector::detectWithBlobDetector(cv::Mat& frame);
 	cv::Mat CueBallDetector::hsiSegment(cv::Mat& frame, int open_size, int close_size, int iLowH, int iLowS, int iLowV,
 		int iHighH, int iHighS, int iHighV);
+	cv::Mat tableMask;
+	cv::Mat cueMask;
 
 public:
 	CueBallDetector();
@@ -28,5 +30,7 @@ public:
 	cv::vector<cv::Vec2i> CueBallDetector::detect(cv::Mat frame, int frameIterator);
 	void setCropX(int value);
 	void setCropY(int value);
+	void setTableMask(cv::Mat frame);
+	void setCueMask(cv::Mat mask);
 };
 
