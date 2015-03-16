@@ -20,32 +20,35 @@ void CueBallDetector::setCropY(int value)
 
 cv::vector<cv::Vec2i> CueBallDetector::detect(cv::Mat frame, int frameIterator)
 {
-	int cropHeight, cropWidth;
-	if (cropY + CROP_HEIGHT <= frame.rows)
+	if (!(cropX == 0 || cropY == 0))
 	{
-		cropHeight = CROP_HEIGHT;
-	}
-	else
-	{
-		cropHeight = frame.rows - cropY;
-	}
+		int cropHeight, cropWidth;
+		if (cropY + CROP_HEIGHT <= frame.rows)
+		{
+			cropHeight = CROP_HEIGHT;
+		}
+		else
+		{
+			cropHeight = frame.rows - cropY;
+		}
 
-	if (cropX - CROP_WIDTH / 2 <= frame.cols)
-	{
-		cropWidth = CROP_WIDTH;
-	}
-	else
-	{
-		cropWidth = (frame.cols - cropX)/2;
-	}
+		if (cropX - CROP_WIDTH / 2 <= frame.cols)
+		{
+			cropWidth = CROP_WIDTH;
+		}
+		else
+		{
+			cropWidth = (frame.cols - cropX) / 2;
+		}
 
-	cv::Mat croppedFrame = frame(cv::Rect(cropX - cropWidth, cropY, cropWidth*2, cropHeight)); // Crop the image for the typical location of the cue.
-	detectWithBlobDetector(frame);
-	imshow("Debug cueball", croppedFrame);
+		cv::Mat croppedFrame = frame(cv::Rect(cropX - cropWidth, cropY, cropWidth * 2, cropHeight)); // Crop the image for the typical location of the cue.
+		detectWithBlobDetector(frame);
+		imshow("Debug cueball", croppedFrame);
 
-	// Convert cropped coords to global coords.
-	cv::Vec2i cueBall = cv::Vec2i(0 + cropX, 0 + cropY);
-	cueBallPosition[0] = cueBall;
+		// Convert cropped coords to global coords.
+		cv::Vec2i cueBall = cv::Vec2i(0 + cropX, 0 + cropY);
+		cueBallPosition[0] = cueBall;
+	}
 	return cueBallPosition;
 }
 
