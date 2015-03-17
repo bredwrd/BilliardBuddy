@@ -20,7 +20,7 @@ const int maxTotalTrajs = 3;
 //Maximum number of edge trajectories drawn 
 const int maxEdgeTrajs = 0;
 //Maximum distance between cue stick and cue ball for cue ball to be crossed
-const int maxCueDist = 100;
+const int maxCueDist = 30;
 //Maximum length of a final trajectory
 const float cutFactor = 0.25;
 //Pocket location constants
@@ -32,6 +32,10 @@ static const cv::Vec2f PT_BR = { 360, 0 };//{xRight, -yBot};
 class PhysicsModel
 {
 private:
+	void adjustCueStick(cv::vector<cv::Vec2f>& cueCoords, cv::vector<cv::Vec2f> ballCoord);
+	void adjustCoordinatesInput(cv::vector<cv::Vec2f>& cueStick, cv::vector<cv::Vec2f>& cueBall, cv::vector<cv::Vec2f>& targetBalls);
+	void adjustCoordinatesOutput(cv::vector<Path>& trajectoryPoints);
+	void swapCue(cv::vector <cv::Vec2f>& cueStick);
 	cv::vector<Path> getTrajectoryGroup(cv::Vec2f param1, cv::Vec2f param2, cv::vector<cv::Vec2f> targetBalls, int ballIndex);
 	cv::vector<cv::Vec2f> getContactPointParams(int featureIndex,cv::Vec2f param1, cv::Vec2f param2, cv::vector<cv::Vec2f> targetBalls, int ballIndex, float radius);
 	cv::vector<cv::Vec2f> backPointFromLine(int featureIndex, cv::Vec2f param1, cv::Vec2f param2, cv::Vec2f target, float radius);
@@ -42,6 +46,6 @@ private:
 public:
 	PhysicsModel();
 	void calculateTrajectories(cv::vector<Path>& trajectoryPoints, cv::vector<cv::Vec2f> cueBall, cv::vector<cv::Vec2f> targetBalls, cv::vector<cv::Vec2f> cueStick);
-	cv::vector<Path> calculate(cv::Mat frame, cv::vector<pocket> pockets, cv::vector<cv::Vec2i> cueStick, cv::vector<cv::Vec2f> cueBall, cv::vector<cv::Vec2f> targetBalls);
+	cv::vector<Path> calculate(cv::Mat frame, cv::vector<pocket> pockets, cv::vector<cv::Vec2i> cueStick, cv::vector<cv::Vec2i> cueBall, cv::vector<cv::Vec2f> targetBalls);
 	~PhysicsModel();
 };

@@ -28,6 +28,8 @@
 #include "PhysicsModel.h"
 #include "HMDInterface.h"
 #include "TrajectoryAugmentor.h"
+#include "BallDetector.h"
+#include "CueBallDetector.h"
 
 class BilliardBuddy
 {

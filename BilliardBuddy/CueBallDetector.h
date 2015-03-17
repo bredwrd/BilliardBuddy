@@ -32,5 +32,6 @@ public:
 	void setCropY(int value);
 	void setTableMask(cv::Mat frame);
 	void setCueMask(cv::Mat mask);
+	
 };
 

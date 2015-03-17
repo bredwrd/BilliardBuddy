@@ -47,11 +47,6 @@ cv::vector<cv::Vec2i> CueBallDetector::detect(cv::Mat frame, int frameIterator)
 
 		detectWithBlobDetector(tableMaskedFrame);
 
-
-		// Convert cropped coords to global coords.
-		cv::Vec2i cueBall = cv::Vec2i(0 + cropX, 0 + cropY);
-		cueBallPosition[0] = cueBall;
-
 	return cueBallPosition;
 }
 
