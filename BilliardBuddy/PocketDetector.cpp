@@ -142,7 +142,15 @@ cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame, int frameIterato
 	cv::vector<pocket> pocketPoints;
 	pocketPoints = pointLocator.infer(orangeKeyPoints, greenKeyPoints, purpleKeyPoints, pinkKeyPoints);
 	defPerspective = pointLocator.getDefPerspective();
-
+	
+	if (defPerspective){
+		imshow("Pocket Testing", frame);
+		for (int i = 0; i < pocketPoints.size(); i++){
+			std::cout << "Point " << i << " (x): " << pocketPoints[i].pocketPoints.pt.x << std::endl;
+			std::cout << "Point " << i << " (y): " << pocketPoints[i].pocketPoints.pt.y << std::endl;
+			std::cout << std::endl;
+		}
+	}
 	cv::vector<cv::KeyPoint> selectedKeyPoints(4);
 	for (int i = 0; i < pocketPoints.size(); i++){
 		selectedKeyPoints[i] = pocketPoints[i].pocketPoints;
