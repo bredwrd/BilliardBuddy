@@ -187,6 +187,9 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 		else if (orangeKeyPoints.size() > 0 && (removeLocation == 0 || removeLocation == 1)){
 			removePinkCandidate(pinkKeyPoints, pockets[0].pocketPoints, orangeKeyPoints[0]);
 			pinkRight = false;
+			if (pinkKeyPoints.size() > 1){
+				defPerspective = true;
+			}
 		}
 		if (purpleKeyPoints.size() > 0 && (removeLocation == 0 || removeLocation == 2)){
 			removePinkCandidate(pinkKeyPoints, pockets[0].pocketPoints, purpleKeyPoints[0]);
