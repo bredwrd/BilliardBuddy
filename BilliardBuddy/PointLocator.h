@@ -33,9 +33,11 @@ private:
 	void addNonLinearPointLocation(cv::vector<pocket> &pockets);
 	void addLastPointLocation(cv::vector<pocket> &pockets, int pocketCount);
 	void removePinkCandidate(cv::vector<cv::KeyPoint> &pinkKeyPoints, cv::KeyPoint firstPocket, cv::KeyPoint secondPocket);
+	bool defPerspective = false;
 
 public:
 	PointLocator();
+	bool getDefPerspective();
 	cv::vector<pocket> infer(cv::vector<cv::KeyPoint> orangeKeyPoints, cv::vector<cv::KeyPoint> greenKeyPoints,
 								cv::vector<cv::KeyPoint> purpleKeyPoints, cv::vector<cv::KeyPoint> pinkKeyPoints);
 	~PointLocator();

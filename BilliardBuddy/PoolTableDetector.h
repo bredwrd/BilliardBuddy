@@ -36,6 +36,7 @@ private:
 	cv::vector<pocket> tableEdgeResult;
 	cv::Mat cueMask;
 	cv::vector<cv::Vec2i> cueBallPosition;
+	bool defPerspective = false;
 
 public:
 	PoolTableDetector();
@@ -44,6 +45,7 @@ public:
 	~PoolTableDetector();
 	void setCueMask(cv::Mat& mask);
 	cv::vector<cv::Vec2i> PoolTableDetector::getCueBallCoords();
+	bool getDefPerspective();
 	
 };
 

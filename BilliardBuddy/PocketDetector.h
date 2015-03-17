@@ -15,11 +15,13 @@ private:
 	cv::Mat PocketDetector::hsiSegment(cv::Mat frame, int open_size, int close_size, int iLowH, int iLowS, int iLowV,
 		int iHighH, int iHighS, int iHighV);
 	//cv::vector<cv::Vec2i> PocketLine;
+	bool defPerspective = false;
 
 public:
 	PocketDetector();
 	cv::vector<cv::Vec2i> detect(cv::Mat frame, int frameIterator);
 	cv::vector<pocket> detectPockets(cv::Mat frame, int frameIterator);
 	~PocketDetector();
+	bool getDefPerspective();
 };
 

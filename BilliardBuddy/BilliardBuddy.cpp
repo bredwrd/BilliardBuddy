@@ -120,9 +120,18 @@ bool BilliardBuddy::processFrame(bool& preprocess, CameraInterface& cameraInterf
 	balls[0] = ballPosition[0]; //temp
 	//balls[1] = { 200, 170 };
 	//balls[2] = { 150, 150 };
-	
-	//Calculate Physics Model
-	cv::vector<Path> pathVector = physicsModel.calculate(rightFrame, pocketPoints, cueCoords, whiteBall, balls);
+	cv::vector<Path> pathVector;
+
+	if (poolTableDetector.getDefPerspective() == true){
+		//Calculate Physics Model
+		pathVector = physicsModel.calculate(rightFrame, pocketPoints, cueCoords, whiteBall, balls);
+	}
+	else{
+		Path tempPath;
+		tempPath.endPoint = 0;
+		tempPath.startPoint = 0;
+		pathVector = { tempPath };
+	}
 
 	//Visually Augment
 	trajectoryAugmentor.augment(rightFrame, pathVector);

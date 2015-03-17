@@ -120,8 +120,12 @@ cv::vector<pocket> PoolTableDetector::detectTableEdge(cv::Mat& frame, int frameI
 	// Initialize Pocket Detector
 	PocketDetector pocketDetector = PocketDetector();
 
+	cv::vector<pocket> pockets = pocketDetector.detectPockets(maskedEdgeFrame, frameIterator);
+
+	defPerspective = pocketDetector.getDefPerspective();
+
 	// Run pocket detector
-	return pocketDetector.detectPockets(maskedEdgeFrame, frameIterator);
+	return pockets;
 }
 
 cv::Mat PoolTableDetector::hsiSegment(cv::Mat frame, int open_size, int close_size, int iLowH, int iLowS, int iLowV,
@@ -185,4 +189,8 @@ cv::vector<cv::Vec2i> PoolTableDetector::getCueBallCoords(){
 
 	return cueBallPosition;
 
+}
+
+bool PoolTableDetector::getDefPerspective(){
+	return defPerspective;
 }

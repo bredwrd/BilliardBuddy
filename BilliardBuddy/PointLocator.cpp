@@ -81,6 +81,7 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 			if (distGreen0ToOrange > distGreen1ToOrange){
 				pockets[0].pocketPoints = greenKeyPoints[0];
 				pockets[1].pocketPoints = greenKeyPoints[1];
+				defPerspective = true;
 			}
 			else{
 				pockets[0].pocketPoints = greenKeyPoints[1];
@@ -397,6 +398,10 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 	}*/
 
 	return pockets;
+}
+
+bool PointLocator::getDefPerspective(){
+	return defPerspective;
 }
 
 cv::Vec2f PointLocator::lineEqn(float x1, float y1, float x2, float y2){

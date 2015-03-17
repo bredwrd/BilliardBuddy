@@ -141,6 +141,7 @@ cv::vector<pocket> PocketDetector::detectPockets(cv::Mat frame, int frameIterato
 	PointLocator pointLocator = PointLocator();
 	cv::vector<pocket> pocketPoints;
 	pocketPoints = pointLocator.infer(orangeKeyPoints, greenKeyPoints, purpleKeyPoints, pinkKeyPoints);
+	defPerspective = pointLocator.getDefPerspective();
 
 	cv::vector<cv::KeyPoint> selectedKeyPoints(4);
 	for (int i = 0; i < pocketPoints.size(); i++){
@@ -173,4 +174,8 @@ cv::Mat PocketDetector::hsiSegment(cv::Mat frame, int open_size, int close_size,
 	erode(maskedFrame, maskedFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(close_size, close_size)));
 
 	return maskedFrame;
+}
+
+bool PocketDetector::getDefPerspective(){
+	return defPerspective;
 }
