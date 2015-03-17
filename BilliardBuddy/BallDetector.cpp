@@ -66,24 +66,20 @@ cv::Mat BallDetector::hsiSegment(cv::Mat& frame, int open_size, int close_size, 
 
 	// Red Balls
 	// We have two hue ranges so segment for both.
-	int high_lowH = 110;
+	int high_lowH = 162;
 	int high_highH = 180;
 
-	cv::Mat highHueMaskedFrame;
-	cv::inRange(imgHSV, cv::Scalar(iLowH, 0, 0), cv::Scalar(iHighH, 0, 0), highHueMaskedFrame); //Threshold the image
-	imgHSV.copyTo(imgHSV, highHueMaskedFrame);
+	cv::Mat highHueMask;
+	cv::inRange(imgHSV, cv::Scalar(high_lowH, 0, 0), cv::Scalar(high_highH, 0, 0), highHueMask); //Threshold the image
 
 	//Create mask
 	cv::Mat maskedFrame;
-	inRange(imgHSV, cv::Scalar(iLowH, iLowS, iLowV), cv::Scalar(iHighH, iHighS, iHighV), maskedFrame); //Threshold the image
-
-	//morphological opening (remove small objects from the foreground)
-	erode(maskedFrame, maskedFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(open_size, open_size)));
-	dilate(maskedFrame, maskedFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(open_size, open_size)));
-
-	//morphological closing (fill small holes in the foreground)
-	dilate(maskedFrame, maskedFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(close_size, close_size)));
-	erode(maskedFrame, maskedFrame, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(close_size, close_size)));
+	cv::inRange(imgHSV, cv::Scalar(iLowH, iLowS, iLowV), cv::Scalar(iHighH, iHighS, iHighV), maskedFrame); //Threshold the image
+	cv::Mat combinedMask;
+	combinedMask = maskedFrame + highHueMask;
+	cv::Mat maskedBallFrame;
+	imgHSV.copyTo(maskedBallFrame, combinedMask);
+	cv::imshow("debug combo mask", maskedBallFrame);
 
 	return maskedFrame;
 }
@@ -100,9 +96,9 @@ void BallDetector::detectWithBlobDetector(cv::Mat& frame)
 	int iHighH = 30;
 
 	int iLowS = 5;
-	int iHighS = 200;
-	int iLowV = 0;
-	int iHighV = 150;
+	int iHighS = 225;
+	int iLowV = 1;
+	int iHighV = 160;
 
 	//Create binary colour segmented mask
 	cv::Mat redBallMask = hsiSegment(frame, open_size, close_size,

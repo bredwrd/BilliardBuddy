@@ -43,7 +43,7 @@ cv::vector<cv::Vec2i> CueBallDetector::detect(cv::Mat frame, int frameIterator)
 
 		cv::Mat tableMaskedFrame;
 		frame.copyTo(tableMaskedFrame, combinedMask);
-		//imshow("debug combined mask", tableMaskedFrame);
+		imshow("debug combined mask", tableMaskedFrame);
 
 		detectWithBlobDetector(tableMaskedFrame);
 
