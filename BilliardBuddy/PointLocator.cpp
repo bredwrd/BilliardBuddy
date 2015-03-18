@@ -47,6 +47,10 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 	bool pinkLeft = true;
 	bool pinkRight = true;
 
+	if (greenKeyPoints.size() + orangeKeyPoints.size() + pinkKeyPoints.size() + purpleKeyPoints.size() >= 4){
+		defPerspective = true;
+	}
+
 	//Select green pockets: Case 1: 2 green pockets in view
 	if (greenKeyPoints.size() == 2){
 		//Step 1: If only green pockets are seen, select destination locations based on their x values.
@@ -81,7 +85,6 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 			if (distGreen0ToOrange > distGreen1ToOrange){
 				pockets[0].pocketPoints = greenKeyPoints[0];
 				pockets[1].pocketPoints = greenKeyPoints[1];
-				defPerspective = true;
 			}
 			else{
 				pockets[0].pocketPoints = greenKeyPoints[1];
@@ -187,9 +190,6 @@ cv::vector<pocket> PointLocator::labelPockets(cv::vector<cv::KeyPoint> orangeKey
 		else if (orangeKeyPoints.size() > 0 && (removeLocation == 0 || removeLocation == 1)){
 			removePinkCandidate(pinkKeyPoints, pockets[0].pocketPoints, orangeKeyPoints[0]);
 			pinkRight = false;
-			if (pinkKeyPoints.size() > 1){
-				defPerspective = true;
-			}
 		}
 		if (purpleKeyPoints.size() > 0 && (removeLocation == 0 || removeLocation == 2)){
 			removePinkCandidate(pinkKeyPoints, pockets[0].pocketPoints, purpleKeyPoints[0]);
