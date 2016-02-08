@@ -1,5 +1,6 @@
 ﻿BilliardBuddy
 =============
+[![BilliardBuddy Demonstratio](http://img.youtube.com/vi/PTK04_O3org/0.jpg)](http://www.youtube.com/watch?v=PTK04_O3org)
 
 A SYDE 461 design project for a mediated-reality training system for sports (e.g. billiards).
 
